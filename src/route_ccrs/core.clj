@@ -4,7 +4,7 @@
             [route-ccrs.route-ccr :as ccr]))
 
 (defn calculate-and-record-ccrs!  [sys]
-  (let [c {:connection ( (:db sys))}]
+  (let [c {:connection (:db sys)}]
     (log/info "CCR calculation started")
     (->> (into [] ar/transduce-routes (ar/active-routes {} c))
          (map
