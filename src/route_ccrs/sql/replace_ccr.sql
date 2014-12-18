@@ -9,6 +9,7 @@ set
   last_ccr_as_of = ccr_as_of,
   --
   operation_no = :operation_no,
+  work_center_no = :work_center_no,
   total_touch_time = :total_touch_time,
   pre_ccr_buffer = :pre_ccr_buffer,
   post_ccr_buffer = :post_ccr_buffer,
