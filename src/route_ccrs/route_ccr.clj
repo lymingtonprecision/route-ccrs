@@ -8,7 +8,10 @@
 (def buffer-factor 1.5)
 
 (defquery best-end-date "route_ccrs/sql/best_end_date.sql")
-(defquery get-last-known-ccr "route_ccrs/sql/last_known_ccr.sql")
+(defquery last-known-ccr "route_ccrs/sql/last_known_ccr.sql")
+
+(defn get-last-known-ccr [r opt]
+  (last-known-ccr r (merge {:result-set-fn first} opt)))
 
 (defquery insert-history-entry! "route_ccrs/sql/insert_history.sql")
 (defquery insert-current-ccr! "route_ccrs/sql/insert_ccr.sql")
