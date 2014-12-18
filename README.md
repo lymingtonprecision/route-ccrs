@@ -3,6 +3,13 @@
 Calculates the current Capacity Constrained Resources for active
 routings in IFS.
 
+Creates and populates two tables:
+
+* `routing_ccr_hist` a history log of all calculated CCR values.
+* `routing_ccr` a slightly de-normalized table giving the CCR as per the
+  last calculation and the previous CCR if there has been a different
+  CCR calculated for the routing in the past.
+
 ## Usage
 
 First, set the following environment variables:
@@ -18,6 +25,10 @@ so these could be entered in `.lein-env` file.)
 Then execute the `jar` file:
 
     java -jar <path\to\route-ccrs.jar>
+
+### Pre-Requisites
+
+`finite-capacity-load` generated free work center capacity periods.
 
 ### Requirements
 
