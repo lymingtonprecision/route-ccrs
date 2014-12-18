@@ -70,7 +70,7 @@
 (defn ccr-entry-updates [id current-ccr new-ccr]
   (let [[old-values new-values no-change] (diff current-ccr new-ccr)
         updated-ccr (merge id no-change new-values)
-        ts (java.sql.Date. (.getTime (java.util.Date.)))]
+        ts (java.sql.Timestamp. (.getTime (java.util.Date.)))]
     (if (seq new-values)
       [(assoc updated-ccr :calculated_at ts)
        (if (:work_center_no new-values)
