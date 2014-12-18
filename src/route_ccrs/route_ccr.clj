@@ -18,11 +18,13 @@
 (defquery update-current-ccr! "route_ccrs/sql/update_ccr.sql")
 (defquery replace-current-ccr! "route_ccrs/sql/replace_ccr.sql")
 
-(defn op-buffer [o]
-  (* (:touch_time o) buffer-factor))
+(defn op-buffer-days [o]
+  (-> (* (:touch_time o) buffer-factor)
+      (/ 60)
+      (/ (:hours_per_day o))))
 
-(defn sum-op-buffers [ops]
-  (reduce (fn [s o] (+ s (op-buffer o))) 0 ops))
+(defn sum-op-buffer-days [ops]
+  (reduce (fn [s o] (+ s (op-buffer-days o))) 0 ops))
 
 (defn on-ccr-wc? [o]
   (= (:potential_ccr o "N") "Y"))
@@ -38,7 +40,7 @@
                          (update :total_touch_time + (:touch_time o))
                          (update :post_ccr_buffer
                                  (fn [o n] (max 0 (- o n)))
-                                 (op-buffer o)))
+                                 (op-buffer-days o)))
                      (merge wc {:operation_no (:operation_no o)
                                 :total_touch_time (:touch_time o)
                                 :pre_ccr_buffer pre
@@ -47,13 +49,13 @@
 (defn reduce-to-ccr-ops [r]
   (-> (reduce
         (fn [[pre-op-buffer post-op-buffer ccrs] o]
-          (let [ob (op-buffer o)
+          (let [ob (op-buffer-days o)
                 pob (- post-op-buffer ob)
                 r (if (on-ccr-wc? o)
                     (add-op-to-ccr-list ccrs o pre-op-buffer pob)
                     ccrs)]
             [(+ pre-op-buffer ob) pob r]))
-        [0 (sum-op-buffers r) {}]
+        [0 (sum-op-buffer-days r) {}]
         r)
       last
       vals))

@@ -77,6 +77,7 @@ select
     2
   ) touch_time,
   --
+  wc.average_capacity hours_per_day,
   wc_ccr.value_text potential_ccr
 from ifsapp.inventory_part ip
 --

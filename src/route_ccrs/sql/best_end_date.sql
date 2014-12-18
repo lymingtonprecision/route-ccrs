@@ -3,7 +3,7 @@ select
     ifsapp.work_time_calendar_api.get_end_date(
       wc.calendar_id,
       greatest(fc.start_work_day, trunc(sysdate)),
-      ((:total_touch_time + :post_ccr_buffer) / 60 / wc.average_capacity)
+      (:total_touch_time / 60 / wc.average_capacity) + :post_ccr_buffer
     )
   ) best_end_date
 from finiteload.free_capacity fc
