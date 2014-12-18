@@ -23,17 +23,12 @@ join ifsapp.work_center wc
   and fc.work_center_no = wc.work_center_no
 where fc.contract = :contract
   and fc.work_center_no = :work_center_no
+  and fc.capacity_available >= :total_touch_time
   and fc.finish_work_day >=
     ifsapp.work_time_calendar_api.get_end_date(
       wc.calendar_id,
       trunc(sysdate),
       :pre_ccr_buffer
-    )
-  and fc.start_work_day <=
-    ifsapp.work_time_calendar_api.get_start_time(
-      wc.calendar_id,
-      fc.finish_work_day,
-      :total_touch_time
     )
   and ifsapp.work_time_calendar_api.get_end_date(
       wc.calendar_id,
