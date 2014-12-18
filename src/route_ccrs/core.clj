@@ -14,5 +14,11 @@
                (ccr/get-last-known-ccr r c)
                (ccr/select-current-ccr (:db sys) o))))
          (filter seq)
-         (reduce (fn [c u] (ccr/update! (:db sys) u) (+ c 1)) 0)
+         (reduce
+           (fn [c u]
+             (let [t (-> u second first)
+                   tc (get c t 0)]
+               (ccr/update! (:db sys) u)
+               (assoc c t (+ tc 1))))
+           {})
          (log/info "calculation complete, updated:"))))
