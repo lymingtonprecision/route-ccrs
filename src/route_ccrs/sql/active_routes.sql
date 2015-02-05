@@ -2,6 +2,7 @@ select
   ip.contract,
   ip.part_no,
   ip.part_status,
+  mpa.low_level lowest_level,
   coalesce(
     dbr_batch.value_no,
     ipp.max_order_qty,
@@ -84,6 +85,9 @@ from ifsapp.inventory_part ip
 join ifsapp.inventory_part_planning ipp
   on ip.contract = ipp.contract
   and ip.part_no = ipp.part_no
+join ifsapp.manuf_part_attribute mpa
+  on ip.contract = mpa.contract
+  and ip.part_no = mpa.part_no
 left outer join ifsapp.technical_object_reference ipor
   on ipor.lu_name = 'InventoryPart'
   and ipor.key_value =
@@ -129,6 +133,7 @@ where ifsapp.inventory_part_status_par_api.get_supply_flag_db(ip.part_status) = 
     nvl(rh.phase_out_date, to_date('9999-12-31', 'yyyy-mm-dd'))
   and ra.objstate not in ('Tentative', 'Obsolete', 'Cancelled')
 order by
+  mpa.low_level,
   ip.part_no,
   rh.bom_type_db,
   rh.routing_revision,

@@ -41,6 +41,7 @@ following access rights:
     -- selects
     grant select on ifsapp.inventory_part to routeccr;
     grant select on ifsapp.inventory_part_planning to routeccr;
+    grant select on ifsapp.manuf_part_attribute to routeccr;
     grant select on ifsapp.routing_head to routeccr;
     grant select on ifsapp.routing_alternate to routeccr;
     grant select on ifsapp.routing_operation to routeccr;
