@@ -18,18 +18,32 @@
       (compare (:operation_no x)
                (:operation_no y))) ))
 
-(defn transduce-routes [step]
+(defn transduce-routes
+  "Transduces routing operation records into tuples of `[route-id operations]`
+  where the `route-id` is a map of the fields uniquely identifying the route
+  and `operations` is a sorted set of the operations that comprise the route.
+
+  Requires the operations to have an `:operation_count` value signifying
+  the total number of operations on the route to which they belong, so
+  that the routes can be checked for completeness."
+  [step]
   (let [routes (volatile! {})]
     (fn
       ([] (step))
       ([r]
-       (step (reduce step r @routes)))
+       (let [v (if (empty? @routes)
+                 r
+                 (reduce step r @routes))]
+         (vreset! routes {})
+         (step v)))
       ([r o]
        (let [i (route-id o)
              route (conj (get @routes i (sorted-operations)) o)
              c (:operation_count o)]
-         (if (and c (= (count route) c))
-           (step r route)
+         (if (= (int (count route)) (int c))
+           (do
+             (vreset! routes (dissoc @routes i))
+             (step r [i route]))
            (do
              (vreset! routes (assoc @routes i route))
              r)))))))
