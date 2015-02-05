@@ -50,6 +50,7 @@ following access rights:
     grant select on finiteload.free_capacity to routeccr;
     -- apis
     grant execute on ifsapp.inventory_part_status_par_api to routeccr;
+    grant execute on ifsapp.site_api to routeccr;
     grant execute on ifsapp.work_time_calendar_api to routeccr;
 
 As the user will be creating tables they will also need a suitable quota

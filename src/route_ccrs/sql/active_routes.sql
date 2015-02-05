@@ -128,27 +128,6 @@ where ifsapp.inventory_part_status_par_api.get_supply_flag_db(ip.part_status) = 
     rh.phase_in_date and
     nvl(rh.phase_out_date, to_date('9999-12-31', 'yyyy-mm-dd'))
   and ra.objstate not in ('Tentative', 'Obsolete', 'Cancelled')
-  -- only routes with at least one CCR op
-  and (
-    select
-      count(*)
-    from ifsapp.routing_operation roc
-    join ifsapp.technical_object_reference wcor
-      on wcor.lu_name = 'WorkCenter'
-      and wcor.key_value =
-        roc.contract ||
-        '^' || roc.work_center_no ||
-        '^'
-    join ifsapp.technical_specification_both wc_ccr
-      on wcor.technical_spec_no = wc_ccr.technical_spec_no
-      and wc_ccr.attribute = 'CCR'
-      and wc_ccr.value_text = 'Y'
-    where ro.contract = roc.contract
-      and ro.part_no = roc.part_no
-      and ro.bom_type_db = roc.bom_type_db
-      and ro.routing_revision = roc.routing_revision
-      and ro.alternative_no = roc.alternative_no
-  ) > 0
 order by
   ip.part_no,
   rh.bom_type_db,

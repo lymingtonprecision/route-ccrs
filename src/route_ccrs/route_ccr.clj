@@ -8,6 +8,7 @@
 (def buffer-factor 1.5)
 
 (defquery best-end-date "route_ccrs/sql/best_end_date.sql")
+(defquery best-unconstrained-end-date "route_ccrs/sql/best_unconstrained_end_date.sql")
 (defquery last-known-ccr "route_ccrs/sql/last_known_ccr.sql")
 
 (defn get-last-known-ccr [r opt]
@@ -31,6 +32,22 @@
 
 (defn update-ccr-best-end-dates [db ccrs]
   (map #(merge % (-> (best-end-date % {:connection db}) first)) ccrs))
+
+(def ccr-map
+  {:contract nil
+   :operation_no nil
+   :work_center_no nil
+   :total_touch_time nil
+   :pre_ccr_buffer nil
+   :post_ccr_buffer nil})
+
+(defn create-unconstrained-ccr-entry [db r]
+  (let [ccr (merge ccr-map {:contract (-> r first :contract)
+                            :post_ccr_buffer (sum-op-buffer-days r)
+                            :total_touch_time (reduce + 0 (map :touch_time r))})]
+    (->> (best-unconstrained-end-date ccr {:connection db})
+         first
+         (merge ccr))))
 
 (defn add-op-to-ccr-list [ccrs o pre post]
   (let [wc (select-keys o [:contract :work_center_no])
@@ -61,11 +78,13 @@
       vals))
 
 (defn select-current-ccr [db r]
-  (->> (reduce-to-ccr-ops r)
-       (update-ccr-best-end-dates db)
-       (filter :best_end_date)
-       (sort-by :best_end_date)
-       first))
+  (let [ccr-ops (reduce-to-ccr-ops r)]
+    (if (seq ccr-ops)
+      (->> (update-ccr-best-end-dates db ccr-ops)
+           (filter :best_end_date)
+           (sort-by :best_end_date)
+           first)
+      (create-unconstrained-ccr-entry db r))))
 
 (defn ccr-entry-updates [id current-ccr new-ccr]
   (let [[old-values new-values no-change] (diff current-ccr new-ccr)
@@ -73,7 +92,8 @@
         ts (java.sql.Timestamp. (.getTime (java.util.Date.)))]
     (if (seq new-values)
       [(assoc updated-ccr :calculated_at ts)
-       (if (:work_center_no new-values)
+       (if (or (contains? new-values :work_center_no)
+               (nil? (:best_end_date current-ccr)))
          [(if (seq current-ccr) :replace :insert) (assoc updated-ccr :ccr_as_of ts)]
          [:update updated-ccr])])))
 
