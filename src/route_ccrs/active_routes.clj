@@ -7,6 +7,7 @@
 (defn route-id [r]
   (select-keys r [:contract
                   :part_no
+                  :lowest_level
                   :bom_type_db
                   :routing_revision_no
                   :routing_alternative_no]))
