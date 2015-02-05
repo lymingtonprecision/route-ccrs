@@ -12,7 +12,7 @@
             x-e (:finish_work_day x)
             y-e (:finish_work_day y)
             c-s (compare x-s y-s)]
-        (if (= c-s 0)
+        (if (zero? c-s)
           (compare x-e y-e)
           c-s)))))
 

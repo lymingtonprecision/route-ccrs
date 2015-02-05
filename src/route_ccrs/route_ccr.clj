@@ -31,7 +31,7 @@
   (= (:potential_ccr o "N") "Y"))
 
 (defn update-ccr-best-end-dates [db ccrs]
-  (map #(merge % (-> (best-end-date % {:connection db}) first)) ccrs))
+  (map #(merge % (first (best-end-date % {:connection db}))) ccrs))
 
 (def ccr-map
   {:contract nil

@@ -19,6 +19,6 @@
              (let [t (-> u second first)
                    tc (get c t 0)]
                (ccr/update! (:db sys) u)
-               (assoc c t (+ tc 1))))
+               (assoc c t (inc tc))))
            {})
          (log/info "calculation complete, updated:"))))
