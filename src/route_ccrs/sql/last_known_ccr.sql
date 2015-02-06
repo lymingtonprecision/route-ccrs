@@ -1,4 +1,5 @@
 select
+  ccr.contract,
   ccr.operation_no,
   ccr.work_center_no,
   ccr.total_touch_time,
