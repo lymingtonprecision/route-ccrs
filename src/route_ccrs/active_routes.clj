@@ -4,19 +4,22 @@
 
 (defquery active-routes "route_ccrs/sql/active_routes.sql")
 
+(def route-id-keys
+  [:contract
+   :part_no
+   :lowest_level
+   :bom_type_db
+   :routing_revision_no
+   :routing_alternative_no])
+
 (defn route-id [r]
-  (select-keys r [:contract
-                  :part_no
-                  :lowest_level
-                  :bom_type_db
-                  :routing_revision_no
-                  :routing_alternative_no]))
+  (select-keys r route-id-keys))
 
 (defn sorted-operations []
   (sorted-set-by
     (fn [x y]
       (compare (:operation_no x)
-               (:operation_no y))) ))
+               (:operation_no y)))))
 
 (defn transduce-routes
   "Transduces routing operation records into tuples of `[route-id operations]`
