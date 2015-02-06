@@ -43,7 +43,7 @@
   (merge default-options (extract-options-from-env env)))
 
 (defn migrations []
-  (rt-files/migrations "src/route_ccrs/migrations"))
+  (rt-files/migrations))
 
 (defrecord Database [env]
   component/Lifecycle
