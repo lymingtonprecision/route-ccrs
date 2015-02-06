@@ -26,6 +26,11 @@ Then execute the `jar` file:
 
     java -jar <path\to\route-ccrs.jar>
 
+Note that [Ragtime](https://github.com/weavejester/ragtime) doesn't
+currently support loading migrations as resources from the JAR file. If
+you want the migrations to be performed automatically when running from
+a JAR you need to copy the `migrations` folder to the runtime directory.
+
 ### Pre-Requisites
 
 `finite-capacity-load` generated free work center capacity periods.
