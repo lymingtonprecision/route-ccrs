@@ -79,6 +79,12 @@ select
   ) touch_time,
   --
   wc.average_capacity hours_per_day,
+  decode(
+    wc.work_center_code_db,
+    'I', 'internal',
+    'O', 'external',
+    wc.work_center_code_db
+  ) work_center_type,
   wc_ccr.value_text potential_ccr
 from ifsapp.inventory_part ip
 --

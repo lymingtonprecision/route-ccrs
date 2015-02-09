@@ -1,5 +1,5 @@
 (ns route-ccrs.route-ccr
-  (:require [clojure.string :refer [replace] :rename {replace str-replace}]
+  (:require [clojure.string :as str]
             [clojure.data :refer [diff]]
             [clojure.tools.logging :as log]
             [clojure.java.jdbc :as jdbc]
@@ -20,9 +20,17 @@
 (defquery update-current-ccr! "route_ccrs/sql/update_ccr.sql")
 (defquery replace-current-ccr! "route_ccrs/sql/replace_ccr.sql")
 
+(defn- work-center-type [o]
+  (if-let [t (:work_center_type o)]
+    (if (keyword? t)
+      t
+      (-> t str str/lower-case keyword))))
+
 (defn op-buffer-days [o]
-  (-> (* (:touch_time o) buffer-factor)
-      (/ 60)
+  (-> (if (= (work-center-type o) :external)
+        (:touch_time o)
+        (* (:touch_time o) buffer-factor))
+      (/ 60.0)
       (/ (:hours_per_day o))))
 
 (defn sum-op-buffer-days [ops]
