@@ -17,7 +17,40 @@ select
   ) component_count,
   --
   ps.component_part,
-  cp.type_code,
+  decode(
+    cp.type_code_db,
+    ifsapp.inventory_part_type_api.encode('Manufactured'), 'manufactured',
+    'purchased'
+  ) component_type,
+  decode(
+    cp.type_code_db,
+    ifsapp.inventory_part_type_api.encode('Manufactured'), 'M',
+    null
+  ) component_bom_type,
+  (
+    select
+      max(csh.eng_chg_level)
+    from ifsapp.prod_structure_head csh
+    join ifsapp.prod_struct_alternate csa
+      on csh.contract = csa.contract
+      and csh.part_no = csa.part_no
+      and csh.eng_chg_level = csa.eng_chg_level
+      and csh.bom_type_db = csa.bom_type_db
+      and csa.objstate = 'Buildable'
+    where ps.contract = csh.contract
+      and ps.component_part = csh.part_no
+      and csh.bom_type_db = 'M'
+      and csh.eff_phase_in_date <= trunc(sysdate) + ip.expected_leadtime
+      and (
+        csh.eff_phase_out_date is null or
+        csh.eff_phase_out_date >= trunc(sysdate) + ip.expected_leadtime
+      )
+  ) component_revision,
+  decode(
+    cp.type_code_db,
+    ifsapp.inventory_part_type_api.encode('Manufactured'), '*',
+    null
+  ) component_alternate,
   decode(
     cp.type_code_db,
     ifsapp.inventory_part_type_api.encode('Manufactured'),
