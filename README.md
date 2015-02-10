@@ -55,6 +55,7 @@ following access rights:
     grant select on ifsapp.technical_specification_both to routeccr;
     grant select on finiteload.free_capacity to routeccr;
     -- apis
+    grant execute on ifsapp.inventory_part_type_api to routeccr;
     grant execute on ifsapp.inventory_part_status_par_api to routeccr;
     grant execute on ifsapp.site_api to routeccr;
     grant execute on ifsapp.work_time_calendar_api to routeccr;
