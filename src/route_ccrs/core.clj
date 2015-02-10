@@ -19,7 +19,7 @@
     (ccr/ccr-entry-updates
       route-id
       (ccr/get-last-known-ccr route-id c)
-      (ccr/select-current-ccr db operations))))
+      (ccr/select-current-ccr operations c))))
 
 (defn- route-processor
   "Returns a `go-loop` that takes route entries from the `<routes`

@@ -39,8 +39,8 @@
 (defn on-ccr-wc? [o]
   (= (:potential_ccr o "N") "Y"))
 
-(defn update-ccr-best-end-dates [db ccrs]
-  (map #(merge % (first (best-end-date % {:connection db}))) ccrs))
+(defn update-ccr-best-end-dates [ccrs db]
+  (map #(merge % (first (best-end-date % db))) ccrs))
 
 (def ccr-map
   {:contract nil
@@ -50,11 +50,11 @@
    :pre_ccr_buffer nil
    :post_ccr_buffer nil})
 
-(defn create-unconstrained-ccr-entry [db r]
+(defn create-unconstrained-ccr-entry [r db]
   (let [ccr (merge ccr-map {:contract (-> r first :contract)
                             :post_ccr_buffer (sum-op-buffer-days r)
                             :total_touch_time (reduce + 0 (map :touch_time r))})]
-    (->> (best-unconstrained-end-date ccr {:connection db})
+    (->> (best-unconstrained-end-date ccr db)
          first
          (merge ccr))))
 
@@ -86,14 +86,14 @@
       last
       vals))
 
-(defn select-current-ccr [db r]
+(defn select-current-ccr [r db]
   (let [ccr-ops (reduce-to-ccr-ops r)]
     (if (seq ccr-ops)
-      (->> (update-ccr-best-end-dates db ccr-ops)
+      (->> (update-ccr-best-end-dates ccr-ops db)
            (filter :best_end_date)
            (sort-by :best_end_date)
            first)
-      (create-unconstrained-ccr-entry db r))))
+      (create-unconstrained-ccr-entry r db))))
 
 (defn- split-keys
   ([map] map)
