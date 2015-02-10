@@ -1,8 +1,7 @@
 (ns route-ccrs.core
   (:require [clojure.tools.logging :as log]
             [clojure.core.async :as async]
-            [route-ccrs.part :refer [active-parts]]
-            [route-ccrs.part.process :refer [process-parts]]
+            [route-ccrs.parts :refer [active-parts process-parts]]
             [route-ccrs.route-ccr :as ccr]))
 
 (defmacro with-db-connection

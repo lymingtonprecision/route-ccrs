@@ -1,9 +1,27 @@
-(ns route-ccrs.part.process
-  (:require [clojure.core.async :as async]
-            [route-ccrs.part :refer :all]
-            [route-ccrs.route-ccr :as ccr]))
+(ns route-ccrs.processing
+  (:require [clojure.core.async :as async]))
 
-(defn- promise-transduced-query
+(defn transduce-by-shared-id
+  [id-fn set-fn count-key step]
+  (let [sets (volatile! {})]
+    (fn
+      ([] (step))
+      ([r]
+       (let [v (if (empty? @sets) r (reduce step r @sets))]
+         (vreset! sets {})
+         (step v)))
+      ([r e]
+       (let [i (id-fn e)
+             s (conj (get @sets i (set-fn)) (dissoc e count-key))]
+         (if (= (int (count s)) (int (get e count-key)))
+           (do
+             (vreset! sets (dissoc @sets i))
+             (step r [i s]))
+           (do
+             (vreset! sets (assoc @sets i s))
+             r)))))))
+
+(defn promise-transduced-query
   [db query-fn xf coll]
   (let [>rows (async/chan 10 xf)
         <result (async/into coll >rows)
@@ -15,7 +33,7 @@
         (deliver p r)))
     p))
 
-(defn- parallel-worker
+(defn parallel-worker
   ([process-fn <queue >results]
    (parallel-worker process-fn <queue >results false))
   ([process-fn <queue >results batched-results?]
@@ -31,7 +49,7 @@
                (async/>! >results r)))
            (recur)))))))
 
-(defn- parallel-process
+(defn parallel-process
   ([process-fn coll] (parallel-process process-fn coll 10 false))
   ([process-fn coll workers batched-results?]
    (let [<items (async/to-chan coll)
@@ -53,34 +71,3 @@
              (async/close! >results)
              (async/<!! <results))
            (recur)))))))
-
-(defn deferred-routes [db part]
-  (promise-transduced-query
-    db
-    (partial operations-for-part part)
-    transduce-routes
-    {}))
-
-(defn process-route [db [route-id operations]]
-  (let [c {:connection db}]
-    (ccr/ccr-entry-updates
-      route-id
-      (ccr/get-last-known-ccr route-id c)
-      (ccr/select-current-ccr operations c))))
-
-(defn process-routes [db routes]
-  (parallel-process (partial process-route db) routes))
-
-(defn deferred-structs [db part]
-  (promise-transduced-query
-    db
-    (partial components-for-part part)
-    transduce-structures
-    {}))
-
-(defn process-part [db part]
-  (let [routes (deferred-routes db part)]
-    (process-routes db @routes)))
-
-(defn process-parts [db parts]
-  (parallel-process (partial process-part db) parts 10 true))
