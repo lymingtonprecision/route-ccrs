@@ -71,6 +71,13 @@
 (defn process-routes [db routes]
   (parallel-process (partial process-route db) routes))
 
+(defn deferred-structs [db part]
+  (promise-transduced-query
+    db
+    (partial components-for-part part)
+    transduce-structures
+    {}))
+
 (defn process-part [db part]
   (let [routes (deferred-routes db part)]
     (process-routes db @routes)))
