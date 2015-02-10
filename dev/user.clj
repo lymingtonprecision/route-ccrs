@@ -10,7 +10,8 @@
             [ragtime.sql.database :as ragtime-db]
 
             [route-ccrs.system :as sys]
-            [route-ccrs.database :as db]))
+            [route-ccrs.database :as db]
+            [route-ccrs.core :as core]))
 
 (in-ns 'environ.core)
 
