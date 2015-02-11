@@ -15,7 +15,9 @@
 (defn route-id [r]
   (select-keys r route-id-keys))
 
-(defn sorted-operation-set []
+(defn sorted-operation-set
+  "Returns an empty set that will sort its elements by their `:operation_no`"
+  []
   (sorted-set-by
     (fn [x y]
       (compare (:operation_no x) (:operation_no y)))))
@@ -39,12 +41,27 @@
     transduce-routes
     {}))
 
-(defn process-route [db [route-id operations]]
+(defn process-route
+  "Compares the current CCR for a route, as returned from the database, to
+  that calculated for the given collection of operations and returns a tuple
+  of `[route-ccr database-update]`
+
+  The returned `route-ccr` is a map containing the `route-id` fields, the
+  new CCR information for the route, and the routes best end date.
+
+  The `database-update` is a variant of `[update-type update-fields]` where
+  the `update-type` will be one of: `:insert`, `:update`, or `:replace` and
+  `update-fields` is a map of the fields and their values that are required
+  to perform the update."
+  [db route-id operations]
   (let [c {:connection db}]
     (ccr/ccr-entry-updates
       route-id
       (ccr/get-last-known-ccr route-id c)
       (ccr/select-current-ccr operations c))))
 
-(defn process-routes [db routes]
-  (parallel-process (partial process-route db) routes))
+(defn process-routes
+  "Processes a collection of routes, passing each to `process-route`
+  and returning a collection of the results."
+  [db routes]
+  (parallel-process #(apply process-route db %) routes))
