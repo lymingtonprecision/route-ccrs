@@ -1,14 +1,35 @@
 # route-ccrs
 
 Calculates the current Capacity Constrained Resources for active
-routings in IFS.
+manufacturing methods (combination of structure and routing) in IFS.
 
-Creates and populates two tables:
+Performs two types of calculation:
+
+### Routing only
+
+> If we had all the material how soon could we produce _x_?
+
+The results of this calculation are stored in two tables:
 
 * `routing_ccr_hist` a history log of all calculated CCR values.
 * `routing_ccr` a slightly de-normalized table giving the CCR as per the
   last calculation and the previous CCR if there has been a different
   CCR calculated for the routing in the past.
+
+### Full Assembly
+
+> Starting from nothing when could we have _x_?
+
+Calculates, from the bottom up, all assembly lead times, determining
+both what the CCR is and which component is most constrained (and
+causing the longest delay before production can be started.)
+
+Populates two tables:
+
+* `assembly_ccr_hist` a history log all calculated values.
+* `assembly_ccr`, as with `routing_ccr`, a slightly de-normalized
+  table giving the results of the most recent calculation and
+  those of the preceding calculation when different.
 
 ## Usage
 
@@ -35,6 +56,9 @@ a JAR you need to copy the `migrations` folder to the runtime directory.
 
 `finite-capacity-load` generated free work center capacity periods.
 
+`active_structure_routings` IAL created in `ifsinfo` schema (see
+definition in `resources/ials`.)
+
 ### Requirements
 
 In order to run successfully the user account used must have the
@@ -56,6 +80,9 @@ following access rights:
     grant select on ifsapp.work_center to routeccr;
     grant select on ifsapp.technical_object_reference to routeccr;
     grant select on ifsapp.technical_specification_both to routeccr;
+    -- IALs
+    grant select on ifsinfo.active_structure_routings to routeccr;
+    -- data from other programs
     grant select on finiteload.free_capacity to routeccr;
     -- apis
     grant execute on ifsapp.inventory_part_type_api to routeccr;

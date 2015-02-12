@@ -8,7 +8,7 @@ select
           fc.start_work_day,
           ifsapp.work_time_calendar_api.get_end_date(
             wc.calendar_id,
-            trunc(sysdate),
+            nvl(:start_date, trunc(sysdate)),
             :pre_ccr_buffer
           )
         ),
@@ -27,12 +27,12 @@ where fc.contract = :contract
   and fc.finish_work_day >=
     ifsapp.work_time_calendar_api.get_end_date(
       wc.calendar_id,
-      trunc(sysdate),
+      nvl(:start_date, trunc(sysdate)),
       :pre_ccr_buffer
     )
   and ifsapp.work_time_calendar_api.get_end_date(
       wc.calendar_id,
-      trunc(sysdate),
+      nvl(:start_date, trunc(sysdate)),
       :pre_ccr_buffer
     ) <=
     ifsapp.work_time_calendar_api.get_start_time(

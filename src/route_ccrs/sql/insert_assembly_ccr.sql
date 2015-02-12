@@ -1,6 +1,8 @@
-insert into routing_ccr (
+insert into assembly_ccr (
   contract,
   part_no,
+  eng_chg_level,
+  structure_alternative_no,
   bom_type_db,
   routing_revision_no,
   routing_alternative_no,
@@ -12,10 +14,21 @@ insert into routing_ccr (
   post_ccr_buffer,
   best_end_date,
   ccr_as_of,
+  --
+  ccc_part_no,
+  ccc_bom_type_db,
+  ccc_eng_chg_level,
+  ccc_structure_alternative,
+  ccc_routing_revision_no,
+  ccc_routing_alt_no,
+  ccc_best_end_date,
+  --
   rowversion
 ) values (
   :contract,
   :part_no,
+  :eng_chg_level,
+  :alternative_no,
   :bom_type_db,
   :routing_revision_no,
   :routing_alternative_no,
@@ -27,5 +40,14 @@ insert into routing_ccr (
   :post_ccr_buffer,
   :best_end_date,
   :calculated_at,
+  --
+  :ccc_part_no,
+  :ccc_bom_type,
+  :ccc_eng_chg_level,
+  :ccc_structure_alternative,
+  :ccc_routing_revision,
+  :ccc_routing_alternative,
+  :ccc_best_end_date,
+  --
   sysdate
 )

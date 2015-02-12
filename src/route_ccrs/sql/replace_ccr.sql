@@ -14,7 +14,7 @@ set
   pre_ccr_buffer = :pre_ccr_buffer,
   post_ccr_buffer = :post_ccr_buffer,
   best_end_date = :best_end_date,
-  ccr_as_of = :ccr_as_of,
+  ccr_as_of = :calculated_at,
   rowversion = sysdate
 where contract = :contract
   and part_no = :part_no

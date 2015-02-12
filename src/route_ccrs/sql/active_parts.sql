@@ -27,5 +27,12 @@ left outer join ifsapp.technical_specification_both dbr_batch
 --
 where ip.type_code_db = ifsapp.inventory_part_type_api.encode('Manufactured')
   and ifsapp.inventory_part_status_par_api.get_supply_flag_db(ip.part_status) = 'Y'
+  and exists (
+    select
+      *
+    from ifsinfo.active_structure_routings asr
+    where ip.contract = asr.contract
+      and ip.part_no = asr.part_no
+  )
 order by
   mpa.low_level

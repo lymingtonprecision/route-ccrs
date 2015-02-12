@@ -1,3 +1,14 @@
+with buildable_routings as (
+  select distinct
+    asr.contract,
+    asr.part_no,
+    asr.bom_type_db,
+    asr.routing_revision,
+    asr.routing_alternative
+  from ifsinfo.active_structure_routings asr
+  where asr.contract = :contract
+    and asr.part_no = :part_no
+)
 select
   rh.contract,
   rh.part_no,
@@ -79,7 +90,7 @@ select
     wc.work_center_code_db
   ) work_center_type,
   wc_ccr.value_text potential_ccr
-from ifsapp.routing_head rh
+from buildable_routings rh
 --
 join ifsapp.inventory_part_planning ipp
   on rh.contract = ipp.contract
@@ -99,6 +110,7 @@ join ifsapp.routing_alternate ra
   and rh.part_no = ra.part_no
   and rh.bom_type_db = ra.bom_type_db
   and rh.routing_revision = ra.routing_revision
+  and rh.routing_alternative = ra.alternative_no
 join ifsapp.routing_operation ro
   on ra.contract = ro.contract
   and ra.part_no = ro.part_no
@@ -120,12 +132,6 @@ left outer join ifsapp.technical_specification_both wc_ccr
   on wcor.technical_spec_no = wc_ccr.technical_spec_no
   and wc_ccr.attribute = 'CCR'
 --
-where trunc(sysdate) between
-    rh.phase_in_date and
-    nvl(rh.phase_out_date, to_date('9999-12-31', 'yyyy-mm-dd'))
-  and ra.objstate not in ('Tentative', 'Obsolete', 'Cancelled')
-  and rh.contract = :contract
-  and rh.part_no = :part_no
 order by
   rh.bom_type_db,
   rh.routing_revision,

@@ -1,7 +1,7 @@
 (ns route-ccrs.routes
   (:require [yesql.core :refer [defquery]]
             [route-ccrs.processing :refer :all]
-            [route-ccrs.route-ccr :as ccr]))
+            [route-ccrs.ccr :as ccr]))
 
 (defquery operations-for-part "route_ccrs/sql/buildable_routings_for_part.sql")
 
@@ -57,7 +57,7 @@
   (let [c {:connection db}]
     (ccr/ccr-entry-updates
       route-id
-      (ccr/get-last-known-ccr route-id c)
+      (ccr/get-last-known-route-ccr route-id c)
       (ccr/select-current-ccr operations c))))
 
 (defn process-routes
@@ -65,3 +65,16 @@
   and returning a collection of the results."
   [db routes]
   (parallel-process #(apply process-route db %) routes))
+
+(defquery insert-history-entry! "route_ccrs/sql/insert_history.sql")
+(defquery insert-current-ccr! "route_ccrs/sql/insert_ccr.sql")
+(defquery update-current-ccr! "route_ccrs/sql/update_ccr.sql")
+(defquery replace-current-ccr! "route_ccrs/sql/replace_ccr.sql")
+
+(defn update! [db [t r]]
+  (let [c {:connection db}]
+    (insert-history-entry! r c)
+    (cond
+      (= :replace t) (replace-current-ccr! r c)
+      (= :update t) (update-current-ccr! r c)
+      (= :insert t) (insert-current-ccr! r c))))
