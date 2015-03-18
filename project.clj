@@ -1,4 +1,4 @@
-(defproject route-ccrs "2.0.0"
+(defproject route-ccrs "2.0.1"
   :description "Calculates the current CCR for active routings in IFS"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
