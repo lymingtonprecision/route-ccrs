@@ -15,3 +15,5 @@ where contract = :contract
   and bom_type_db = :bom_type
   and eng_chg_level = :eng_chg_level
   and structure_alternative = :alternative_no
+  and routing_revision is not null
+  and routing_alternative is not null

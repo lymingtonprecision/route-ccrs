@@ -8,6 +8,8 @@ with buildable_structures as (
   from ifsinfo.active_structure_routings asr
   where asr.contract = :contract
     and asr.part_no = :part_no
+    and asr.routing_revision is not null
+    and asr.routing_alternative is not null
 ),
 active_components as (
   select

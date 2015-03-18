@@ -24,7 +24,7 @@ join ifsapp.prod_struct_alternate psa
   and psh.bom_type_db = psa.bom_type_db
   and psa.objstate in ('Plannable', 'Buildable')
 --
-join ifsapp.routing_head rh
+left outer join ifsapp.routing_head rh
   on psh.contract = rh.contract
   and psh.part_no = rh.part_no
   and psh.bom_type_db = rh.bom_type_db
@@ -33,7 +33,7 @@ join ifsapp.routing_head rh
     rh.phase_out_date is null or
     rh.phase_out_date > greatest(sysdate, psh.eff_phase_in_date)
   )
-join ifsapp.routing_alternate ra
+left outer join ifsapp.routing_alternate ra
   on rh.contract = ra.contract
   and rh.part_no = ra.part_no
   and rh.routing_revision = ra.routing_revision
@@ -43,3 +43,8 @@ join ifsapp.routing_alternate ra
 where trunc(sysdate) between
     psh.eff_phase_in_date and
     nvl(psh.eff_phase_out_date, to_date('9999-12-31', 'yyyy-mm-dd'))
+  and (
+    psh.bom_type_db = 'P' or
+    rh.routing_revision is not null and
+    ra.alternative_no is not null
+  )
