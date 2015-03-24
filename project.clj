@@ -12,6 +12,10 @@
 
                  [org.spootnik/logconfig "0.7.3"]
 
+                 [prismatic/schema "0.4.0"]
+
+                 [clj-time "0.9.0"]
+
                  [org.clojure/java.jdbc "0.3.6"]
                  [org.clojars.zentrope/ojdbc "11.2.0.3.0"]
                  [hikari-cp "1.1.1"]
@@ -20,7 +24,9 @@
 
   :main route-ccrs.main
 
-  :profiles {:dev {:dependencies [[org.clojure/tools.namespace "0.2.10"]]}
+  :profiles {:dev {:dependencies [[org.clojure/tools.namespace "0.2.10"]
+                                  [org.clojure/test.check "0.7.0"]
+                                  [com.gfredericks/test.chuck "0.1.16"]]}
              :uberjar {:aot [route-ccrs.main]}
              :repl {:source-paths ["dev" "src"]}}
 
