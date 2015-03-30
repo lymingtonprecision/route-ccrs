@@ -5,9 +5,7 @@
             [clj-time.core :as t]
             [route-ccrs.schema.purchased-raw-part-test :refer [gen-raw-part]]
             [clojure.zip :as zip :refer [up down left right node]]
-            [route-ccrs.part-zipper :refer [part-zipper
-                                            root-part
-                                            path-from-loc-to-part]]))
+            [route-ccrs.part-zipper :refer :all]))
 
 (use-fixtures :once schema.test/validate-schemas)
 
@@ -78,6 +76,64 @@
                  []
                  (get-in p [:structs 1 :components 1 :structs 1 :routes])))
            (-> z down down down down down right zip/children set)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; node utility fns
+
+(deftest node-key-of-the-root-is-nil
+  (is (nil? (node-key (part-zipper simple-test-part)))))
+
+(deftest node-keys
+  (let [p {:id "100105468R01"
+           :type :structured
+           :best-end-date nil
+           :struct-in-use 1
+           :structs
+           {1 {:id {:type :purchased :revision 1 :alternative "*"}
+               :lead-time 10 :best-end-date nil :components {}}
+            :a {:id {:type :purchased :revision 1 :alternative "1"}
+                :lead-time 10 :best-end-date nil :components {}}
+            "m" {:id {:type :manufactured :revision 1 :alternative "*"}
+                 :components
+                 {[:a 1 '*] {:id "100104687R74"
+                             :type :raw :lead-time 10 :best-end-date nil}}
+                 :route-in-use 'ow
+                 :routes
+                 {'ow {:id {:type :manufactured :revision 1 :alternative "*"}
+                       :operations [{:id 10 :work-center MC032 :touch-time 1}]}}}}}
+        z (part-zipper p)]
+    (is (= 1 (-> z down node-key)))
+    (is (= :components (-> z down down node-key)))
+    (is (= :a (-> z down right node-key)))
+    (is (= [:a 1 '*] (-> z down zip/rightmost down down node-key)))
+    (is (= 'ow (-> z down zip/rightmost down right down node-key)))))
+
+(deftest node-val-of-the-root-is-the-supplied-part
+  (is (= simple-test-part (node-val (part-zipper simple-test-part)))))
+
+(deftest node-vals
+  (let [p simple-test-part
+        z (part-zipper p)]
+    (is (= (get-in p [:structs 1]) (-> z down node-val)))
+    (is (= (get-in p [:structs 1 :components 1])
+           (-> z down down down node-val)))
+    (is (= (get-in p [:structs 1 :components 1 :structs 1 :routes 1])
+           (-> z down down down down down right down node-val)))
+    (is (= (get-in p [:structs 1 :components 1 :structs 1 :components 2])
+           (-> z down down down down down down right node-val)))))
+
+(deftest edit-vals
+  (let [p simple-test-part
+        f {:best-end-date (java.util.Date.)
+           :ccr nil
+           :total-touch-time 10
+           :total-buffer 5}
+        z (part-zipper p)]
+    (is (= (update-in p [:structs 1 :components 1 :structs 1 :routes 1]
+                      merge f)
+           (-> z down down down down down right down
+               (edit-val merge f)
+               root-part)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; zip/children and zip/branch?

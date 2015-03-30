@@ -17,18 +17,46 @@
   * Raw parts and routes have no children, moving `down` from them
     returns `nil`.
 
-  All list entries are returned as `{key value}` maps so you'll
-  generally want to use the following pattern when editing them:
+  All list entries are returned as `{key value}` maps and there are
+  three utility fns to make working with them in this format easier:
 
-      (zip/edit (fn [n d] (assoc-in n (keys n) :best-end-date d)
-                (java.util.Date.))
-      (zip/edit (fn [n m] (update-in n (keys n) merge m))
-                {:lead-time 20 :best-end-date (java.util.Date.)})
+      (let [p {:id \"100104678R01\"
+               :type :structured
+               :best-end-date nil
+               :struct-in-use 1
+               :structs
+               {1 {:id {:type :purchased :revision 1 :alternative "*"}
+                  :lead-time 10 :best-end-date nil :components {}}}}
+            z (part-zipper p)
+            loc (-> z down)]
+        (zip/node loc)   ;=> {1 {:id {...} ...}}
+        (node-key loc)   ;=> 1
+        (node-val loc) ;=> {:id {...} ...}}
 
-  (That is: use and `-in` fn with `(keys node)` as the path.)
+        (edit-val loc assoc :best-end-date (java.util.Date.))
+        ;=> zipper loc with the node now equal to:
+        ;=> {1 {:id {:type :purchased :revision 1 :alternative "*"}
+        ;=>     :lead-time 10 :components {}
+        ;=>     :best-end-date #inst \"2015-03-30T00:00:00.00\"}
 
-  Similarly, when _adding_ nodes be aware that you _must_ supply them
-  as `{key value}` maps:
+        (root-part z))
+        ;=> {:id \"100104678R01\"
+        ;=>  :type :structured
+        ;=>  :best-end-date nil
+        ;=>  :struct-in-use 1
+        ;=>  :structs
+        ;=>  {1 {:id {:type :purchased :revision 1 :alternative "*"}
+        ;=>     :lead-time 10
+        ;=>     :best-end-date #inst \"2015-03-30T00:00:00.00\"
+        ;=>     :components {}}}}
+
+  A `root-part` fn is also provided as the part supplied to the zipper
+  undergoes some extra wrapping which will be left in place if you use
+  the standard `zip/root` fn. This takes care of that extra wrapping
+  whilst also doing everything `zip/root` does.
+
+  Be aware that when _adding_ nodes you **must** supply them as
+  `{key value}` maps:
 
       ; given a part zipper `z` of a structured part...
       (-> z
@@ -178,6 +206,22 @@
   that extra level of wrapping.)"
   [z]
   (::part (zip/root z)))
+
+(defn node-key
+  "Returns the key of the node at `loc`."
+  [loc]
+  (-> loc zip/node keys first (#(if (not= ::part %) %))))
+
+(defn node-val
+  "Returns the value of the node at `loc`."
+  [loc]
+  (-> loc zip/node vals first))
+
+(defn edit-val
+  "Replaces the node at `loc` with the value of `(f node-value args)`,
+  keeping its key."
+  [loc f & args]
+  (zip/replace loc {(node-key loc) (apply f (node-value loc) args)}))
 
 (defn path-from-loc-to-part
   "Returns the path from the zipper location `loc` to the part to which
