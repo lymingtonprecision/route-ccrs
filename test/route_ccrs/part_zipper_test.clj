@@ -5,7 +5,9 @@
             [clj-time.core :as t]
             [route-ccrs.schema.purchased-raw-part-test :refer [gen-raw-part]]
             [clojure.zip :as zip :refer [up down left right node]]
-            [route-ccrs.part-zipper :refer [part-zipper root-part]]))
+            [route-ccrs.part-zipper :refer [part-zipper
+                                            root-part
+                                            path-from-loc-to-part]]))
 
 (use-fixtures :once schema.test/validate-schemas)
 
@@ -42,18 +44,16 @@
                    :lead-time 15
                    :best-end-date nil}}}}}}}}})
 
-(deftest top-level-traversal
-  (let [p simple-test-part
-        z (part-zipper p)]
-    (is (nil? (zip/left z)))
-    (is (nil? (zip/right z)))
-    (is (= #{:components :routes}
-           (->> z zip/down zip/children (map #(-> % keys first)) set)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; root-part
 
 (deftest root-part-returns-part-at-root-of-zipper
   (let [p simple-test-part
         z (part-zipper p)]
     (is (= p (-> z down down down down down root-part)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; format of nodes
 
 (deftest struct-nodes-are-single-element-maps-of-the-struct-entry
   (let [p simple-test-part
@@ -78,6 +78,17 @@
                  []
                  (get-in p [:structs 1 :components 1 :structs 1 :routes])))
            (-> z down down down down down right zip/children set)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; zip/children and zip/branch?
+
+(deftest top-level-traversal
+  (let [p simple-test-part
+        z (part-zipper p)]
+    (is (nil? (zip/left z)))
+    (is (nil? (zip/right z)))
+    (is (= #{:components :routes}
+           (->> z zip/down zip/children (map #(-> % keys first)) set)))))
 
 (deftest all-structs-are-children-of-a-structured-part
   (let [p {:id "100105468R01"
@@ -320,3 +331,35 @@
                (zip/insert-left {2 c})
                root-part)]
     (is (= (assoc-in p [:structs 1 :components 2] c) ep))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Pathing
+
+(deftest path-to-the-root-part-is-the-part-number
+  (let [p simple-test-part
+        z (part-zipper p)]
+    (is (= [(:id p)] (vec (path-from-loc-to-part z))))))
+
+(deftest path-to-component-part-is-component-part-number
+  (let [p simple-test-part
+        z (part-zipper p)
+        l (-> z down down down)]
+    (is (= [(get-in p [:structs 1 :components 1 :id])]
+           (vec (path-from-loc-to-part l))))))
+
+(deftest path-from-struct-is-struct-id-part-no
+  (let [p simple-test-part
+        z (part-zipper p)
+        l (-> z down down down down)]
+    (is (= [(get-in p [:structs 1 :components 1 :structs 1 :id])
+            (get-in p [:structs 1 :components 1 :id])]
+           (vec (path-from-loc-to-part l))))))
+
+(deftest path-from-route-is-route-id-struct-id-part-no
+  (let [p simple-test-part
+        z (part-zipper p)
+        l (-> z down down down down down right down)]
+    (is (= [(get-in p [:structs 1 :components 1 :structs 1 :routes 1 :id])
+            (get-in p [:structs 1 :components 1 :structs 1 :id])
+            (get-in p [:structs 1 :components 1 :id])]
+           (vec (path-from-loc-to-part l))))))
