@@ -129,6 +129,8 @@
            :total-touch-time 10
            :total-buffer 5}
         z (part-zipper p)]
+    (is (= (assoc p :best-end-date (:best-end-date f))
+           (-> z (edit-val assoc :best-end-date (:best-end-date f)) root-part)))
     (is (= (update-in p [:structs 1 :components 1 :structs 1 :routes 1]
                       merge f)
            (-> z down down down down down right down

@@ -171,6 +171,9 @@
       (conj (vec t) x)
       (vec t))))
 
+(defn ^:private -node-key [loc]
+  (-> loc zip/node keys first))
+
 (defn invalid-part-zipper-entry
   "Returns a message denoting the unexpected nature of `x` when
   encountered as a node within a part zipper."
@@ -210,7 +213,8 @@
 (defn node-key
   "Returns the key of the node at `loc`."
   [loc]
-  (-> loc zip/node keys first (#(if (not= ::part %) %))))
+  (let [k (-node-key loc)]
+    (if (not= ::part k) k)))
 
 (defn node-val
   "Returns the value of the node at `loc`."
@@ -221,7 +225,9 @@
   "Replaces the node at `loc` with the value of `(f node-value args)`,
   keeping its key."
   [loc f & args]
-  (zip/replace loc {(node-key loc) (apply f (node-value loc) args)}))
+  (let [k (-node-key loc)
+        v (apply f (node-value loc) args)]
+    (zip/replace loc {k v})))
 
 (defn path-from-loc-to-part
   "Returns the path from the zipper location `loc` to the part to which
