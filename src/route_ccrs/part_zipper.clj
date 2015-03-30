@@ -135,6 +135,14 @@
      (first maps)
      (rest maps))))
 
+(defn take-until
+  "Like `take-while` but includes the item that matches `pred`."
+  [pred coll]
+  (let [[t r] (split-with (complement pred) coll)]
+    (if-let [x (first r)]
+      (conj (vec t) x)
+      (vec t))))
+
 (defn invalid-part-zipper-entry
   "Returns a message denoting the unexpected nature of `x` when
   encountered as a node within a part zipper."
@@ -170,3 +178,31 @@
   that extra level of wrapping.)"
   [z]
   (::part (zip/root z)))
+
+(defn path-from-loc-to-part
+  "Returns the path from the zipper location `loc` to the part to which
+  it belongs.
+
+  If `loc` is a part then a sequence containing just the part number is
+  returned.
+
+  If `loc` is a routing or structure then a sequence of IDs leading back
+  to the part to which it belongs is returned:
+
+     [route-id struct-id part-id]
+     ; or
+     [struct-id part-id]
+  "
+  [loc]
+  (let [path-to-item (if-let [p (zip/path loc)]
+                       (->> (map #(-> % vals first :id) p)
+                            (remove nil?)
+                            reverse)
+                       [])
+        full-path (conj path-to-item (-> loc zip/node vals first :id))]
+    (vec (take-until string? full-path))))
+
+(defn path-from-part-to-loc
+  "A convenience for reversing the results of `path-from-loc-to-part`."
+  [loc]
+  (-> loc path-from-loc-to-part reverse vec))
