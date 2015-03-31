@@ -25,7 +25,7 @@
                :best-end-date nil
                :struct-in-use 1
                :structs
-               {1 {:id {:type :purchased :revision 1 :alternative "*"}
+               {1 {:id {:type :purchased :revision 1 :alternative \"*\"}
                   :lead-time 10 :best-end-date nil :components {}}}}
             z (part-zipper p)
             loc (-> z down)]
@@ -35,7 +35,7 @@
 
         (edit-val loc assoc :best-end-date (java.util.Date.))
         ;=> zipper loc with the node now equal to:
-        ;=> {1 {:id {:type :purchased :revision 1 :alternative "*"}
+        ;=> {1 {:id {:type :purchased :revision 1 :alternative \"*\"}
         ;=>     :lead-time 10 :components {}
         ;=>     :best-end-date #inst \"2015-03-30T00:00:00.00\"}
 
@@ -45,7 +45,7 @@
         ;=>  :best-end-date nil
         ;=>  :struct-in-use 1
         ;=>  :structs
-        ;=>  {1 {:id {:type :purchased :revision 1 :alternative "*"}
+        ;=>  {1 {:id {:type :purchased :revision 1 :alternative \"*\"}
         ;=>     :lead-time 10
         ;=>     :best-end-date #inst \"2015-03-30T00:00:00.00\"
         ;=>     :components {}}}}
@@ -226,7 +226,7 @@
   keeping its key."
   [loc f & args]
   (let [k (-node-key loc)
-        v (apply f (node-value loc) args)]
+        v (apply f (node-val loc) args)]
     (zip/replace loc {k v})))
 
 (defn path-from-loc-to-part
