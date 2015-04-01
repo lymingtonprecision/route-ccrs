@@ -14,7 +14,9 @@
      :or {ccr (gen/one-of [(gen/return nil) (ccr/gen-ccr)])
           best-end-date gen-date
           total-touch-time gen/pos-int
-          total-buffer gen/pos-int}}]
+          total-buffer (gen/one-of
+                         [gen/pos-int
+                          (gen-such-that #(>= % 0) gen'/double)])}}]
    (gen/hash-map
      :ccr ccr
      :best-end-date best-end-date
@@ -39,7 +41,10 @@
      (gen-calc-results
        {:best-end-date (gen/one-of [(gen/return nil) gen/simple-type])})
      ; invalid touch time
-     (gen-calc-results {:total-touch-time gen-neg-int-or-non-number})
+     (gen-calc-results {:total-touch-time
+                        (gen/one-of
+                          [gen-neg-int-or-non-number
+                           gen'/double])})
      ; invalid buffer
      (gen-calc-results {:total-buffer gen-neg-int-or-non-number})]))
 
