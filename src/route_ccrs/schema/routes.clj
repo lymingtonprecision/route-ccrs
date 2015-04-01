@@ -27,15 +27,16 @@
   "An operation ID is a non-zero positive integer."
   int-gt-zero)
 
-(def ^:private touch-time num-gte-zero)
-(def ^:private buffer int-gte-zero)
+(def ^:private touch-time int-gte-zero)
+(def ^:private buffer num-gte-zero)
 
 (def Operation
   "An operation has *only* the following fields:
 
-  `:id` a valid `OperationId`
-  `:touch-time` zero, or a positive number (integer or float)
-  `:work-center` a valid `WorkCenter` record"
+  * `:id` a valid `OperationId`
+  * `:touch-time` zero, or a positive integer; the number of minutes run
+    time of the operation
+  * `:work-center` a valid `WorkCenter` record"
   {:id OperationId
    :touch-time touch-time
    :work-center WorkCenter})
@@ -43,11 +44,14 @@
 (def CCR
   "A CCR record has *only* the following fields:
 
-  `:id` a valid `WorkCenterId`
-  `:operation` a valid `OperationId`
-  `:total-touch-time` zero, or a positive number (integer or float)
-  `:pre-ccr-buffer` zero, or a positive integer
-  `:post-ccr-buffer` zero, or a positive integer"
+  * `:id` a valid `WorkCenterId`
+  * `:operation` a valid `OperationId`
+  * `:total-touch-time` zero, or a positive integer; the total run time,
+    in minutes, of operations against the CCR
+  * `:pre-ccr-buffer` zero, or a positive number; the total number of
+    days production before the CCR
+  * `:post-ccr-buffer` zero, or a positive number; the total number of
+    days production after the CCR"
   {:id WorkCenterId
    :operation OperationId
    :total-touch-time touch-time
@@ -58,10 +62,12 @@
   "Calculations of the CCR/Best End Date for a route result in a map
   of *only* the following fields:
 
-  `:ccr` nil or a valid `CCR` record
-  `:best-end-date` a valid `Date`
-  `:total-touch-time` zero, or a positive number (integer or float)
-  `:total-buffer` zero, or a positive integer"
+  * `:ccr` nil or a valid `CCR` record
+  * `:best-end-date` a valid `Date`
+  * `:total-touch-time` zero, or a positive integer; the total run time
+    of the route in minutes
+  * `:total-buffer` zero, or a positive number; the total buffered run
+    time of the route in working days"
   {:ccr (s/maybe CCR)
    :best-end-date Date
    :total-touch-time touch-time
