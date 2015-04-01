@@ -13,7 +13,7 @@
   ([{:keys [id components lead-time best-end-date]
      :or {id (gen/fmap #(assoc % :type :purchased) mm/gen-manufacturing-method)
           components (gen/return {})
-          lead-time (gen/such-that pos? gen/pos-int)
+          lead-time (gen-such-that pos? gen/pos-int)
           best-end-date gen-date}}]
    (gen/hash-map
      :id id
@@ -24,7 +24,7 @@
 (def gen-invalid
   (gen/one-of
     [; invalid method type
-     (gen-valid {:id (gen/such-that #(not= (:type %) :purchased)
+     (gen-valid {:id (gen-such-that #(not= (:type %) :purchased)
                                     mm/gen-manufacturing-method)})
      ; invalid id
      (gen-valid {:id mm/gen-invalid-manufacturing-method})
@@ -33,8 +33,8 @@
      ; invalid lead time
      (gen-valid {:lead-time
                  (gen/one-of
-                   [(gen/such-that (complement zero?) gen/neg-int)
-                    (gen/such-that (complement number?) gen/simple-type)])})
+                   [(gen-such-that neg? gen/neg-int)
+                    (gen-such-that (complement number?) gen/simple-type)])})
      ; invalid end date
      (gen-valid {:best-end-date gen/simple-type})
      ; missing field

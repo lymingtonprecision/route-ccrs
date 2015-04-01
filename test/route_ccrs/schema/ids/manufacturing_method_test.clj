@@ -9,7 +9,7 @@
 (def ^:private valid-types [:manufactured :purchased :repair])
 
 (def gen-type (gen/elements valid-types))
-(def gen-revision (gen/such-that #(> % 0) gen/pos-int))
+(def gen-revision (gen-such-that pos? gen/pos-int))
 (def gen-alt (gen/fmap str (gen/frequency
                              [[5 (gen/return "*")]
                               [3 (gen/choose 1 9)]
@@ -27,7 +27,7 @@
   (gen/fmap
     tuple->manufacturing-method
     (gen/tuple
-      (gen/such-that #(nil? (% valid-types)) gen/keyword)
+      (gen-such-that #(nil? (% valid-types)) gen/keyword)
       gen-revision
       gen-alt)))
 
@@ -38,7 +38,7 @@
       gen-type
       (gen/one-of [gen/neg-int
                    (gen/return nil)
-                   (gen/such-that (complement number?) gen/simple-type)])
+                   (gen-such-that (complement number?) gen/simple-type)])
       gen-alt)))
 
 (def gen-mm-with-invalid-alt
@@ -50,10 +50,10 @@
       (gen/one-of [(gen/return "0")
                    (gen/return nil)
                    (gen/fmap str gen/neg-int)
-                   (gen/such-that
+                   (gen-such-that
                      #(nil? (re-find #"^(\*|[1-9]\d+)$" %))
                      gen/string)
-                   (gen/such-that (complement string?) gen/simple-type)]))))
+                   (gen-such-that (complement string?) gen/simple-type)]))))
 
 (def gen-mm-with-extra-keys
   (gen-with-extra-fields gen-manufacturing-method {:max 5}))

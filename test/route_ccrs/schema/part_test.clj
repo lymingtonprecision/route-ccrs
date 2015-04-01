@@ -34,9 +34,11 @@
          (fn [[p t]] (assoc p :type t))
          (gen/tuple
            (gen/one-of [(gen-structured-part) (gen-raw-part)])
-           (gen/such-that
-             #(not (contains? #{:structured :raw} %))
-             (gen/one-of [gen/keyword gen/simple-type]))))]
+           (gen/one-of
+             [gen/simple-type
+              (gen-such-that
+                #(not (contains? #{:structured :raw} %))
+                gen/keyword)])))]
     (not-valid-to-schema Part p)))
 
 (defspec parts-cant-have-fields-beyond-those-of-their-type

@@ -23,13 +23,14 @@
 
 (def gen-neg-int-or-non-number
   (gen/one-of
-    [(gen/such-that #(< % 0) gen/neg-int)
-     (gen/such-that (complement number?) gen/simple-type)]) )
+    [(gen-such-that neg? gen/neg-int)
+     (gen-such-that (complement number?) gen/simple-type)]))
 
 (def gen-invalid-calc-results
   (gen/one-of
     [; invalid ccr
-     (gen-calc-results {:ccr (gen/such-that (complement nil?) gen/simple-type)})
+     (gen-calc-results
+       {:ccr (gen-such-that (complement nil?) gen/simple-type)})
      ; munged ccr
      (gen/fmap
        (fn [[m k v]] (assoc m k v))

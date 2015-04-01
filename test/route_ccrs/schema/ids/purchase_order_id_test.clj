@@ -7,14 +7,14 @@
             [route-ccrs.schema.ids :refer [PurchaseOrderId]]))
 
 (def gen-invalid-line-no
-  (gen/such-that #(if (number? %) (< % 0) true) gen/simple-type))
+  (gen-such-that #(if (number? %) (< % 0) true) gen/simple-type))
 
 (defn gen-purchase-order-id
   ([] (gen-purchase-order-id {}))
   ([{:keys [order-no line release]
      :or {order-no (gen/not-empty (gen/resize 12 gen/string-alphanumeric))
-          line (gen/such-that #(> % 0) gen/pos-int)
-          release (gen/such-that #(> % 0) gen/pos-int)}}]
+          line (gen-such-that pos? gen/pos-int)
+          release (gen-such-that pos? gen/pos-int)}}]
    (gen/hash-map :order-no order-no :line line :release release)))
 
 (def gen-invalid-purchase-order-id
@@ -23,9 +23,9 @@
      (gen-purchase-order-id
        {:order-no (gen/one-of
                     [(gen/return "")
-                     (gen/such-that #(> (count %) 12)
+                     (gen-such-that #(> (count %) 12)
                                     (gen/resize 100 gen/string-alphanumeric))
-                     (gen/such-that (complement string?) gen/simple-type)])})
+                     (gen-such-that (complement string?) gen/simple-type)])})
      ; invalid line
      (gen-purchase-order-id
        {:line (gen/one-of [(gen/return 0) gen-invalid-line-no])})

@@ -25,7 +25,7 @@
   25
   (prop'/for-all
     [t gen/simple-type
-     t2 (gen/such-that #(not= % t) gen/simple-type)
+     t2 (gen-such-that #(not= % t) gen/simple-type)
      r (gen/map gen/simple-type (gen/return {:id {:type t}}))
      :let [s {:id {:type t} :routes r}]]
     (not-valid-to-schema
@@ -34,11 +34,12 @@
 
 (defn gen-routed-attrs [t]
   (let [gen-id (route/gen-valid-id t)]
-    (gen'/for [routes (gen/resize
-                        *sensible-child-list-size*
-                        (gen/map
-                          gen/simple-type
-                          (route/gen-calculated-route {:id gen-id})))
+    (gen'/for [routes (gen/not-empty
+                        (gen/resize
+                          *sensible-child-list-size*
+                          (gen/map
+                            gen/simple-type
+                            (route/gen-calculated-route {:id gen-id}))))
                :let [route-in-use (rand-nth (keys routes))]]
               {:routes routes
                :route-in-use route-in-use})))
@@ -52,9 +53,7 @@
                        (gen/map
                          gen/simple-type
                          (raw/gen-raw-part)))
-          routes (gen/such-that
-                   #(not-empty (:routes %))
-                   (gen-routed-attrs :manufactured))}}]
+          routes (gen-routed-attrs :manufactured)}}]
    (gen/fmap
      (partial apply merge)
      (gen/tuple

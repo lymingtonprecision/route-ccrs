@@ -10,10 +10,10 @@
             [route-ccrs.schema.parts :refer [Source Sourced]]))
 
 (def sources
-  {:fixed-leadtime {:valid (gen/such-that (complement zero?) gen/pos-int)
+  {:fixed-leadtime {:valid (gen-such-that (complement zero?) gen/pos-int)
                     :invalid (gen/one-of
                                [gen/neg-int
-                                (gen/such-that (complement number?)
+                                (gen-such-that (complement number?)
                                                gen/simple-type)])}
    :fictitious {:valid nil :invalid gen/simple-type}
    :stock {:valid nil :invalid gen/simple-type}

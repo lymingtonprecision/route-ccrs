@@ -4,6 +4,8 @@
             [clojure.test.check.generators :as gen]
             [clj-time.core :as t]))
 
+(def ^:dynamic *such-that-retries* 100)
+
 (defn is-valid-to-schema [s x]
   (is (nil? (check s x))))
 
@@ -23,3 +25,7 @@
 
 (def gen-date
   (gen/fmap #(t/plus (t/today) (t/days %)) gen/pos-int))
+
+(defn gen-such-that
+  ([pred gen] (gen-such-that pred gen *such-that-retries*))
+  ([pred gen max-retries] (gen/such-that pred gen max-retries)))
