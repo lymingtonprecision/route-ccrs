@@ -15,15 +15,15 @@
   (gen/fmap (partial apply str)
             (gen/tuple
               (gen/elements ["" "RMA" "IFR" "L"])
-              (gen/such-that #(> % 0) gen/pos-int))))
+              (gen-such-that pos? gen/pos-int))))
 
 (def gen-valid-release
   (gen/one-of
     [(gen/return "*")
-     (gen/fmap str (gen/such-that #(> % 0) gen/pos-int))]))
+     (gen/fmap str (gen-such-that pos? gen/pos-int))]))
 
 (def gen-invalid-release
-  (gen/such-that #(if (number? %) (< % 0) true) gen/simple-type))
+  (gen-such-that #(if (number? %) (< % 0) true) gen/simple-type))
 
 (defn gen-shop-order-id
   ([] (gen-shop-order-id {}))
@@ -38,14 +38,15 @@
   (gen/one-of
     [; invalid order number
      (gen-shop-order-id
-       {:order-no (gen/such-that not-shop-order-no? gen/string-alphanumeric)})
+       {:order-no
+        (gen-such-that not-shop-order-no? gen/string-alphanumeric)})
      ; invalid release
      (gen-shop-order-id {:release gen-invalid-release})
      ; invalid sequence
      (gen-shop-order-id {:sequence gen-invalid-release})
      ; every field invalid
      (gen-shop-order-id
-       (gen/such-that not-shop-order-no? gen/string-alphanumeric)
+       (gen-such-that not-shop-order-no? gen/string-alphanumeric)
        gen-invalid-release
        gen-invalid-release)
      ; not a map

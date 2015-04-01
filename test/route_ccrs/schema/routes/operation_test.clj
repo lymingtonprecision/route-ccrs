@@ -9,19 +9,18 @@
             [route-ccrs.schema.routes.work-center-test :as wc]
             [route-ccrs.schema.routes :refer [Operation]]))
 
-(def gen-valid-id (gen/such-that (complement zero?) gen/pos-int))
+(def gen-valid-id (gen-such-that pos? gen/pos-int))
 (def gen-invalid-id (gen/one-of
                      [gen/neg-int
                       gen'/double
-                      (gen/such-that #(if (number? %) (< % 1) true)
+                      (gen-such-that #(if (number? %) (< % 1) true)
                                      gen/simple-type)]))
 
 (defn gen-operation
   ([] (gen-operation {}))
   ([{:keys [id touch-time work-center]
      :or {id gen-valid-id
-          touch-time (gen/such-that
-                      #(>= % 0) (gen/one-of [gen'/double gen/pos-int]))
+          touch-time gen/pos-int
           work-center wc/gen-work-center}}]
    (gen/hash-map
     :id id
@@ -37,9 +36,9 @@
      ; invalid touch time
     (gen-operation {:touch-time
                     (gen/one-of
-                     [(gen/such-that
-                       #(< % 0) (gen/one-of [gen'/double gen/neg-int]))
-                      (gen/such-that (complement number?) gen/simple-type)])})
+                     [(gen-such-that neg? gen/neg-int)
+                      gen'/double
+                      (gen-such-that (complement number?) gen/simple-type)])})
      ; not a record
     gen/simple-type]))
 

@@ -36,12 +36,12 @@
     [; invalid id
      (gen-raw-part {:id pn/gen-invalid-part-no})
      ; invalid type
-     (gen-raw-part {:type (gen/such-that #(not= % :raw) gen/simple-type)})
+     (gen-raw-part {:type (gen-such-that #(not= % :raw) gen/simple-type)})
      ; invalid lead time
-     (gen-raw-part {:lead-time (gen/such-that #(< % 0) gen/neg-int)})
+     (gen-raw-part {:lead-time (gen-such-that neg? gen/neg-int)})
      ; invalid end date
      (gen-raw-part {:best-end-date
-                    (gen/such-that (complement nil?) gen/simple-type)})
+                    (gen-such-that (complement nil?) gen/simple-type)})
      ; invalid source
      (gen/one-of
       [(gen/fmap #(assoc % :source nil) (gen-raw-part))

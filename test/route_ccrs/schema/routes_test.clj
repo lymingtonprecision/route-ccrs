@@ -15,7 +15,7 @@
 
 (defn gen-valid-id
   ([]
-   (gen/such-that
+   (gen-such-that
      #(not= :purchased (:type %))
      ids/gen-manufacturing-method))
   ([t]
@@ -50,11 +50,11 @@
                             (gen/hash-map
                               :operations
                               (gen/one-of
-                                [(gen/such-that
+                                [(gen-such-that
                                    (complement nil?)
                                    gen/simple-type)
                                  (gen/return {})
-                                 (gen/such-that
+                                 (gen-such-that
                                    not-empty
                                    (gen/vector gen/simple-type))]))})
      ; incomplete results
@@ -68,7 +68,7 @@
   ([] (gen-uncalculated-route {}))
   ([{:keys [id operations results]
      :or {id (gen-valid-id)
-          operations (gen/such-that not-empty (gen/vector (op/gen-operation)))
+          operations (gen/not-empty (gen/vector (op/gen-operation)))
           results (gen/one-of
                     [(gen/return {})
                      (gen/fmap
@@ -94,7 +94,7 @@
        (gen/tuple
          (gen-uncalculated-route)
          (gen/elements (keys RouteCalculationResults))
-         (gen/such-that (complement nil?) gen/simple-type)))]))
+         (gen-such-that (complement nil?) gen/simple-type)))]))
 
 (defspec valid-calculated-routes
   (prop/for-all [r (gen-calculated-route)]
@@ -142,7 +142,7 @@
 (defspec routed-items-must-have-route-in-use
   (prop'/for-all
     [k gen/simple-type
-     k2 (gen/such-that #(not= % k) gen/simple-type)
+     k2 (gen-such-that #(not= % k) gen/simple-type)
      r (gen-calculated-route)]
     (do (not-valid-to-schema RoutedItem {:routes {k r}})
         (not-valid-to-schema RoutedItem {:routes {k r} :route-in-use nil})

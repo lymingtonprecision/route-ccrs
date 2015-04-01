@@ -56,7 +56,7 @@
      ; invalid type
      (gen-structured-part {:type (gen/one-of
                                    [(gen/return :raw)
-                                    (gen/such-that
+                                    (gen-such-that
                                       #(not= % :structured)
                                       gen/simple-type)])})
      ; invalid best end date
@@ -65,10 +65,10 @@
      (gen/fmap #(dissoc % :best-end-date) (gen-structured-part))
      ; invalid struct in use
      (gen'/for [s (gen-structured-part)
-                k (gen/such-that
+                k (gen-such-that
                     #(not (contains? (:structs s) %))
                     gen/simple-type)]
-               #(assoc s :struct-in-use k))
+               (assoc s :struct-in-use k))
      ; invalid struct
      (gen/fmap
        (fn [[p k v]] (assoc-in p [:structs k] v))
@@ -76,8 +76,6 @@
          (gen-structured-part)
          gen/simple-type
          gen/simple-type))
-     ; missing structs
-     (gen-structured-part {:structs (gen/return {})})
      ; extra fields
      (gen-with-extra-fields
        (gen-structured-part)
@@ -89,6 +87,11 @@
 (defspec invalid-structured-parts
   (prop/for-all
     [p gen-invalid-structured-part]
+    (not-valid-to-schema StructuredPart p)))
+
+(defspec must-have-structs
+  (prop/for-all
+    [p (gen-structured-part {:structs (gen/return {})})]
     (not-valid-to-schema StructuredPart p)))
 
 (defn gen-multilevel
@@ -145,9 +148,7 @@
        (fn [[vp ivp]] (if valid? vp (assoc vp (rand-int (count vp)) ivp)))
        (gen/tuple
          (gen/not-empty (gen/vector (gen-structured-part)))
-         (gen/such-that
-           #(not-empty (:structs %))
-           gen-invalid-structured-part))))))
+          gen-invalid-structured-part)))))
 
 (defspec valid-multilevel
   *num-multilevel-tests*
