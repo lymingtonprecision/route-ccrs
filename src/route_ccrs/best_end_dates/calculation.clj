@@ -141,18 +141,40 @@
    (-update-best-end-date r edc sd)))
 
 (s/defn update-all-best-end-dates-under-part :- ps/Part
+  "Returns a copy of the part `p` with newly calculated best end dates
+  for the part itself and every component record of which it is
+  comprised.
+
+  The calculation is performed from the \"bottom up\" so that each
+  newly calculated end date feeds into the calculation of the next level
+  up. All records at the lowest level, raw parts for example, will use
+  `sd` as the start date from which their end date is calculated (which
+  defaults to today.)
+
+  `edc` **must** implement the `EndDateResolver`,
+  `IntervalEndDateCalculator`, and `ManufacturingEndDateCalculator`
+  protocols."
   ([p :- ps/Part, edc]
    (update-all-best-end-dates-under-part p edc (t/today)))
   ([p :- ps/Part, edc, sd :- Date]
+   {:pre [(satisfies? EndDateResolver edc)
+          (satisfies? IntervalEndDateCalculator edc)
+          (satisfies? ManufacturingEndDateCalculator edc)]}
    (let [bottom (loop [loc (part-zipper p)]
                   (let [x (zip/next loc)]
                     (if (zip/end? x)
                       loc
-                      (recur x))))]
+                      (recur x))))
+         phantom-node? #(or (nil? (zip/node %))
+                            (contains? #{:routes :components} (pz/node-key %)))
+         node-sd #(if (nil? (s/check rs/Route (pz/node-val %)))
+                    (start-date (-> % zip/up zip/up pz/node-val) sd)
+                    (start-date (pz/node-val %) sd))]
      (loop [loc bottom]
-       (if (zip/end? loc)
-         (pz/root-part loc)
-         (let [nn (zip/edit loc
-                            update-best-end-date edc
-                            (start-date (zip/node loc) sd))]
-           (recur (zip/prev nn))))))))
+       (let [loc (if (not (phantom-node? loc))
+                   (pz/edit-val loc update-best-end-date edc (node-sd loc))
+                   loc)
+             pn (zip/prev loc)]
+         (if (nil? pn)
+           (pz/root-part loc)
+           (recur pn)))))))
