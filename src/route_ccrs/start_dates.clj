@@ -4,7 +4,7 @@
   (:require [schema.core :as s]
             [clj-time.core :as t]
             [clj-time.coerce :as tc]
-            [route-ccrs.util :refer [defmethods]]
+            [route-ccrs.util :refer [defmethods sourced?]]
             [route-ccrs.util.schema-dispatch :refer [get-schema]]
             [route-ccrs.schema.dates :refer [Date]]
             [route-ccrs.schema.routes :as rs]
@@ -39,9 +39,11 @@
 (defmethods -start-date [r default]
   rs/Route default
   ps/PurchasedRawPart default
-  ps/StructuredPart (-start-date
-                      (get-in r [:structs (:struct-in-use r)])
-                      default)
+  ps/StructuredPart (if (sourced? r)
+                      default
+                      (-start-date
+                        (get-in r [:structs (:struct-in-use r)])
+                        default))
   ps/Structure (or (max-component-end-date (:components r)) default))
 
 (defmethod -start-date :default [_ _] nil)
@@ -59,8 +61,11 @@
 
   If `r` is a purchased raw part then the start date is the `default`.
 
-  If `r` is a structured part then the start date is the start date of
-  the structure currently in use.
+  If `r` is a non-sourced structured part then the start date is the
+  start date of the structure currently in use.
+
+  If `r` is a _sourced_ structured part then the start date is the
+  `default`.
 
   If `r` is a structure then the start date is the greatest of its
   component end dates, or the `default` if it has no components or they
