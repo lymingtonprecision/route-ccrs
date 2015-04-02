@@ -1,8 +1,11 @@
 (ns route-ccrs.start-dates-test
   (:require [clojure.test :refer :all]
+            [schema.test]
             [clj-time.core :as t]
             [clj-time.coerce :as tc]
             [route-ccrs.start-dates :refer :all]))
+
+(use-fixtures :once schema.test/validate-schemas)
 
 (defn gen-date [] (t/plus (t/today) (t/days (rand-int 999))))
 
@@ -83,3 +86,21 @@
     (is (= (tc/to-date-time (t/latest d1 d2)) (start-date p)))
     (is (= (t/today) (start-date (assoc p :struct-in-use 2))))
     (is (= d3 (start-date (assoc p :struct-in-use 2) d3)))))
+
+(deftest start-date-of-a-sourced-structured-part
+  (let [e (gen-date)
+        r {:id "100178605R01"
+           :type :structured
+           :best-end-date nil
+           :source [:fixed-leadtime (rand-int 999)]
+           :struct-in-use 1
+           :structs
+           {1 {:id {:type :purchased :revision 1 :alternative "*"}
+               :lead-time 10
+               :best-end-date nil
+               :components
+               {1 {:id "100123486R01"
+                   :type :raw
+                   :lead-time 10
+                   :best-end-date (t/plus e (t/days (rand-int 999)))}}}}}]
+    (is (= e (start-date r e)))))
