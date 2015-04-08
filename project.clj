@@ -29,6 +29,7 @@
                                   [org.clojure/test.check "0.7.0"]
                                   [com.gfredericks/test.chuck "0.1.16"]]}
              :uberjar {:aot [route-ccrs.main]}
+             :test {:source-paths ["dev" "src"]}
              :repl {:source-paths ["dev" "src"]}}
 
   :test-selectors {:default (complement :db)
