@@ -19,6 +19,4 @@ where ip.part_status in (
     from ifsinfo.active_structure_routings asr
     where ip.contract = asr.contract
       and ip.part_no = asr.part_no
-      and asr.structure_status <> 'Tentative'
-      and asr.Routing_status <> 'Tentative'
   )
