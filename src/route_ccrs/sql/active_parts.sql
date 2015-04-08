@@ -33,6 +33,8 @@ where ip.type_code_db = ifsapp.inventory_part_type_api.encode('Manufactured')
     from ifsinfo.active_structure_routings asr
     where ip.contract = asr.contract
       and ip.part_no = asr.part_no
+      and asr.structure_status <> 'Tentative'
+      and asr.Routing_status <> 'Tentative'
   )
 order by
   mpa.low_level

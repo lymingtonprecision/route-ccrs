@@ -10,6 +10,7 @@ with buildable_structures as (
     and asr.part_no = :part_no
     and asr.routing_revision is not null
     and asr.routing_alternative is not null
+    and asr.structure_status <> 'Tentative'
 ),
 active_components as (
   select
@@ -39,6 +40,7 @@ active_components as (
           and ps.component_part = asr.part_no
           and asr.bom_type_db = 'M'
           and asr.structure_alternative = '*'
+          and asr.structure_status <> 'Tentative'
           and trunc(sysdate) + ip.expected_leadtime between
             asr.phase_in_date and
             asr.phase_out_date
@@ -85,6 +87,7 @@ active_components as (
         and ps.component_part = asr.part_no
         and asr.bom_type_db = 'M'
         and asr.structure_alternative = '*'
+        and asr.structure_status <> 'Tentative'
         and trunc(sysdate) + ip.expected_leadtime between
           asr.phase_in_date and
           asr.phase_out_date

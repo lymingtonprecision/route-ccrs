@@ -10,6 +10,7 @@ with buildable_routings as (
     and asr.part_no = :part_no
     and asr.routing_revision is not null
     and asr.routing_alternative is not null
+    and asr.routing_status <> 'Tentative'
 )
 select
   rh.contract,

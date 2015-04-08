@@ -22,7 +22,7 @@ join ifsapp.prod_struct_alternate psa
   and psh.part_no = psa.part_no
   and psh.eng_chg_level = psa.eng_chg_level
   and psh.bom_type_db = psa.bom_type_db
-  and psa.objstate in ('Plannable', 'Buildable')
+  and psa.objstate in ('Tentative', 'Plannable', 'Buildable')
 --
 left outer join ifsapp.routing_head rh
   on psh.contract = rh.contract
@@ -38,7 +38,7 @@ left outer join ifsapp.routing_alternate ra
   and rh.part_no = ra.part_no
   and rh.routing_revision = ra.routing_revision
   and rh.bom_type_db = ra.bom_type_db
-  and ra.objstate in ('Plannable', 'Buildable')
+  and ra.objstate in ('Tentative', 'Plannable', 'Buildable')
 --
 where trunc(sysdate) between
     psh.eff_phase_in_date and

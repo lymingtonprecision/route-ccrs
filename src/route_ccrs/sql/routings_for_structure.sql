@@ -17,3 +17,4 @@ where contract = :contract
   and structure_alternative = :alternative_no
   and routing_revision is not null
   and routing_alternative is not null
+  and routing_status <> 'Tentative'
