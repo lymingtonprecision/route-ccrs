@@ -20,3 +20,5 @@ where asr.contract = 'LPE'
   )
   and asr.eng_chg_level = :revision
   and asr.structure_alternative = :alternative
+  and asr.routing_revision is not null
+  and asr.routing_alternative is not null
