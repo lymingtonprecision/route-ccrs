@@ -32,12 +32,12 @@
 (deftest deserialize-part-test
   (is (= {:type :raw :lead-time 10 :best-end-date nil}
          (deserialize-part
-           {:type "raw" :lead_time 10.0134 :best_end_date nil}))))
+          {:type "raw" :lead_time 10.0134 :best_end_date nil}))))
 
 (deftest deserialize-mm-id-test
   (is (= {:type :manufactured :revision 1 :alternative "*"}
          (deserialize-mm-id
-           {:type "manufactured" :revision "1" :alternative "*"}))))
+          {:type "manufactured" :revision "1" :alternative "*"}))))
 
 (deftest deserialize-route-operation-test
   (is (= {:route {:type :manufactured :revision 1 :alternative "*"}
@@ -48,25 +48,25 @@
                         :hours-per-day 8.1
                         :potential-ccr? true}}
          (deserialize-route-operation
-           {:route__type "manufactured"
-            :route__revision "1"
-            :route__alternative "*"
-            :id 10M
-            :touch_time 25.001
-            :work_center "MC032"
-            :type "internal"
-            :hours_per_day 8.1
-            :potential_ccr "Y"}))))
+          {:route__type "manufactured"
+           :route__revision "1"
+           :route__alternative "*"
+           :id 10M
+           :touch_time 25.001
+           :work_center "MC032"
+           :type "internal"
+           :hours_per_day 8.1
+           :potential_ccr "Y"}))))
 
 (deftest deserialize-structure-test
   (let [d (tc/to-sql-date (t/today))
         s {:type "manufactured"
-            :revision "1"
-            :alternative "*"
-            :lead_time 10
-            :best_end_date d}]
+           :revision "1"
+           :alternative "*"
+           :lead_time 10
+           :best_end_date d}]
     (is (= {:id {:type :manufactured :revision 1 :alternative "*"}}
-         (deserialize-structure s)))
+           (deserialize-structure s)))
     (is (= {:id {:type :purchased :revision 1 :alternative "*"}
             :lead-time 10
             :best-end-date (tc/to-date-time d)}
@@ -78,31 +78,31 @@
 (deftest mm->sql-id-params-test
   (is (= {:bom_type "manufactured" :revision "1" :alternative "*"}
          (mm->sql-id-params
-           {:id {:type :manufactured :revision 1 :alternative "*"}}))))
+          {:id {:type :manufactured :revision 1 :alternative "*"}}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Protocol implementation tests, against the database
 
 (defspec ^:db active-parts-test *default-db-test-count*
   (prop/for-all
-    [n (gen/such-that pos? gen/pos-int)]
-    (is (= n (count (take n (active-parts @part-store)))))))
+   [n (gen/such-that pos? gen/pos-int)]
+   (is (= n (count (take n (active-parts @part-store)))))))
 
 (defquery -raw-parts "queries/raw_parts.sql")
 (defquery -full-parts "queries/active_and_valid_full_bom_parts.sql")
 
 (defspec ^:db get-raw-parts-test *default-db-test-count*
   (prop/for-all
-    [p (gen/elements (-raw-parts {} {:connection (:db @tu/test-system)}))
-     r gen/boolean]
-    (is (= (:id p) (:id (get-part @part-store p r))))))
+   [p (gen/elements (-raw-parts {} {:connection (:db @tu/test-system)}))
+    r gen/boolean]
+   (is (= (:id p) (:id (get-part @part-store p r))))))
 
 (defspec ^:db get-full-parts-test *default-db-test-count*
   (prop/for-all
-    [p (gen/elements (-full-parts {:min_depth 0}
-                                  {:connection (:db @tu/test-system)}))
-     r gen/boolean]
-    (is (= (:id p) (:id (get-part @part-store p r))))))
+   [p (gen/elements (-full-parts {:min_depth 0}
+                                 {:connection (:db @tu/test-system)}))
+    r gen/boolean]
+   (is (= (:id p) (:id (get-part @part-store p r))))))
 
 (defn reduce-children [f i s]
   (loop [r i loc (-> s zip/down zip/rightmost)]
@@ -118,22 +118,22 @@
 (defn has-no-second-level-children? [p]
   (let [z (pz/part-zipper p)
         slc (reduce-children
-              (fn [r struct]
-                (conj
-                  r
-                  (reduce-children
-                    (fn [r component]
-                      (or r (has-child-components? component)))
-                    false
-                    (zip/down struct))))
-              []
-              z)]
+             (fn [r struct]
+               (conj
+                r
+                (reduce-children
+                 (fn [r component]
+                   (or r (has-child-components? component)))
+                 false
+                 (zip/down struct))))
+             []
+             z)]
     (if (some identity slc)
       false
       true)))
 
 (defspec ^:db get-non-recursive-parts-test *default-db-test-count*
   (prop/for-all
-    [p (gen/elements (-full-parts {:min_depth 2}
-                                  {:connection (:db @tu/test-system)}))]
-    (is (= true (has-no-second-level-children? (get-part @part-store p false))))))
+   [p (gen/elements (-full-parts {:min_depth 2}
+                                 {:connection (:db @tu/test-system)}))]
+   (is (= true (has-no-second-level-children? (get-part @part-store p false))))))
