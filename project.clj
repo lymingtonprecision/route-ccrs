@@ -23,6 +23,8 @@
                  [squirrel "0.1.1"]
                  [ragtime "0.3.8"]]
 
+  :jvm-opts ["-Duser.timezone=UTC"]
+
   :main route-ccrs.main
 
   :profiles {:dev {:dependencies [[org.clojure/tools.namespace "0.2.10"]
