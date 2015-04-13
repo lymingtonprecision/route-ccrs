@@ -27,7 +27,7 @@
 (def date-serializer
   (reify sq/Serializer
     (serialize [_ v] (tc/to-sql-date v))
-    (deserialize [_ v] (tc/to-date-time v))))
+    (deserialize [_ v] (tc/to-local-date v))))
 
 (def bool-serializer
   (reify sq/Serializer

@@ -66,7 +66,7 @@
                              (gen/tuple gen/s-pos-int
                                         (gen/elements (range 1 12))
                                         (gen/elements (range 1 28))))]
-                (is (instance? org.joda.time.DateTime
+                (is (instance? org.joda.time.LocalDate
                                (deserialize date-serializer d)))))
 
 (defspec date-deserialization-of-sql-timestamps
@@ -78,5 +78,5 @@
                                         (gen/elements (range 0 23))
                                         (gen/elements (range 0 59))
                                         (gen/elements (range 0 59))))]
-                (is (instance? org.joda.time.DateTime
+                (is (instance? org.joda.time.LocalDate
                                (deserialize date-serializer d)))))

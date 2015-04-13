@@ -69,7 +69,7 @@
            (deserialize-structure s)))
     (is (= {:id {:type :purchased :revision 1 :alternative "*"}
             :lead-time 10
-            :best-end-date (tc/to-date-time d)}
+            :best-end-date (tc/to-local-date d)}
            (deserialize-structure (assoc s :type "purchased"))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
