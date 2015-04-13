@@ -151,7 +151,7 @@
   with which it can be paired."
   [db
    part :- {:id ids/PartNo s/Any s/Any}
-   structure :- {:id ids/ManufacturedMethodId s/Any s/Any}
+   structure :- {:id ids/ManufacturingMethod s/Any s/Any}
    routes :- {s/Str rs/Route}]
   (if (= :purchased (-> structure :id :type))
     structure
