@@ -81,6 +81,9 @@ following access rights:
     grant select on ifsapp.work_center to routeccr;
     grant select on ifsapp.technical_object_reference to routeccr;
     grant select on ifsapp.technical_specification_both to routeccr;
+    grant select on ifsapp.shop_ord to routeccr;
+    grant select on ifsapp.purchase_order to routeccr;
+    grant select on ifsapp.purchase_order_line to routeccr;
     -- IALs
     grant select on ifsinfo.active_structure_routings to routeccr;
     -- data from other programs
