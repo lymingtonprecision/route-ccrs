@@ -8,3 +8,7 @@
     (user/init))
   (user/start)
   (reset! test-system user/system))
+
+(defn stop-test-system []
+  (user/stop)
+  (reset! test-system user/system))

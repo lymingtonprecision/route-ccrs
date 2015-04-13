@@ -34,8 +34,9 @@
              :test {:source-paths ["dev" "src"]}
              :repl {:source-paths ["dev" "src"]}}
 
-  :test-selectors {:default (complement :db)
+  :test-selectors {:default (complement :db :integration)
                    :db :db
+                   :integration :integration
                    :all (constantly true)}
 
   :repl-options {:init-ns user
