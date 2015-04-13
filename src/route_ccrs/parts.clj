@@ -26,8 +26,8 @@
     * If the part is structured, its structures including:
       * All of the routings for the structure.
       * All of the components with their structures/routings
-        and, if `recurse?` is truthy, their components on down
-        the tree.
+        and, if `recurse?` is truthy (the default), their
+        components on down the tree.
 
     To better understand the implications of the `recurse?` flag:
 
