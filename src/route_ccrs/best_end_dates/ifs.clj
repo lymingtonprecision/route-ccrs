@@ -46,7 +46,9 @@
 
 (s/defn ^:always-validate -ifs-interval-end-date :- Date
   ([db days] (-ifs-interval-end-date db days nil))
-  ([db days :- s/Int start-date :- (s/maybe Date)]
+  ([db
+    days :- (s/both s/Num (s/pred #(>= % 0)))
+    start-date :- (s/maybe Date)]
    (-db-interval-end-date {:duration days
                            :start_date (if start-date
                                          (tc/to-sql-date start-date))}
