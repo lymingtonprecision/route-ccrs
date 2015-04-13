@@ -56,8 +56,17 @@ a JAR you need to copy the `migrations` folder to the runtime directory.
 
 `finite-capacity-load` generated free work center capacity periods.
 
-`active_structure_routings` IAL created in `ifsinfo` schema (see
-definition in `resources/ials`.)
+IALs created in the `ifsinfo` schema (see definitions in the
+`resources/ials` folder):
+
+* `active_structure_routings`
+  Lists all currently active _and tentative_ product structure/routing
+  combinations.
+
+* `valid_product_structures`
+  Lists every structure for which every part in the structure, at every
+  level, is either a purchased raw part or has at least one entry in
+  `active_structure_routings`.
 
 ### Requirements
 
@@ -86,6 +95,7 @@ following access rights:
     grant select on ifsapp.purchase_order_line to routeccr;
     -- IALs
     grant select on ifsinfo.active_structure_routings to routeccr;
+    grant select on ifsinfo.valid_product_structures to routeccr;
     -- data from other programs
     grant select on finiteload.free_capacity to routeccr;
     -- apis

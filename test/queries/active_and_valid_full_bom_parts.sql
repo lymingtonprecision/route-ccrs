@@ -1,37 +1,4 @@
-with valid_boms as (
-  select distinct
-    asr.contract,
-    asr.part_no,
-    asr.eng_chg_level,
-    asr.bom_type_db,
-    asr.structure_alternative
-  from ifsinfo.active_structure_routings asr
-  --
-  minus
-  --
-  select distinct
-    connect_by_root ps.contract,
-    connect_by_root ps.part_no,
-    connect_by_root ps.eng_chg_level,
-    connect_by_root ps.bom_type_db,
-    connect_by_root ps.alternative_no
-  from ifsapp.prod_structure ps
-  join ifsapp.inventory_part ip
-    on ps.contract = ip.contract
-    and ps.component_part = ip.part_no
-  where ip.type_code_db <> '3'
-    and not exists (
-      select
-        *
-      from ifsinfo.active_structure_routings asr
-      where ps.contract = asr.contract
-        and ps.component_part = asr.part_no
-    )
-  connect by
-    prior ps.contract = ps.contract
-    and prior ps.component_part = ps.part_no
-),
-structure_depths as (
+with structure_depths as (
   select
     contract,
     part_no,
@@ -62,13 +29,13 @@ structure_depths as (
 select
   vb.part_no id,
   min(sd.depth) min_depth
-from valid_boms vb
+from ifsinfo.valid_product_structures vb
 join structure_depths sd
   on vb.contract = sd.contract
   and vb.part_no = sd.part_no
   and vb.eng_chg_level = sd.eng_chg_level
   and vb.bom_type_db = sd.bom_type_db
-  and vb.structure_alternative = sd.alternative_no
+  and vb.alternative_no = sd.alternative_no
 group by
   vb.part_no
 having
