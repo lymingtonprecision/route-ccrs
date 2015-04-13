@@ -7,13 +7,7 @@
             [route-ccrs.schema.ids :as ids]
             [route-ccrs.schema.parts :as ps]
             [route-ccrs.schema.routes :as rs]
-            [route-ccrs.manufacturing-methods :as mm]
-
-            ; old deps
-            [clojure.core.async :as async]
-            [route-ccrs.processing :refer :all]
-            [route-ccrs.routes :as route]
-            [route-ccrs.structs :as struct]))
+            [route-ccrs.manufacturing-methods :as mm]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Protocols
@@ -123,16 +117,16 @@
   "Returns a map of all currently active routings of the specified part."
   [db part :- {:id ids/PartNo s/Any s/Any}]
   (reduce
-    (fn [r ro]
-      (let [rid (:route ro)
-            k (mm/short-mm rid)
-            o (dissoc ro :route)
-            route (get r k {:id rid :operations []})]
-        (assoc r k (update-in route [:operations] conj o))))
-    {}
-    (-db-active-routes {:part_no (:id part)}
-                       {:connection db
-                        :row-fn deserialize-route-operation})))
+   (fn [r ro]
+     (let [rid (:route ro)
+           k (mm/short-mm rid)
+           o (dissoc ro :route)
+           route (get r k {:id rid :operations []})]
+       (assoc r k (update-in route [:operations] conj o))))
+   {}
+   (-db-active-routes {:part_no (:id part)}
+                      {:connection db
+                       :row-fn deserialize-route-operation})))
 
 (s/defn ^:always-validate get-structure-route-ids :- [ids/ManufacturedMethodId]
   "Returns a collection of route IDs that can be used in combination
@@ -156,8 +150,8 @@
   (if (= :purchased (-> structure :id :type))
     structure
     (let [r (select-keys
-              routes
-              (map mm/short-mm (get-structure-route-ids db part structure)))
+             routes
+             (map mm/short-mm (get-structure-route-ids db part structure)))
           riu (-> (map :id (vals r))
                   mm/preferred-mm
                   mm/short-mm)]
@@ -178,32 +172,32 @@
    structure :- {:id ids/ManufacturingMethod s/Any s/Any}
    populate-fn]
   (reduce
-    (fn [r c]
-      (assoc r (:id c) (if (= :raw (:type c)) c (populate-fn c))))
-    {}
-    (-db-parts (merge {:part_no nil :parent_part_no (:id part)}
-                      (mm->sql-id-params structure))
-               {:connection db
-                :row-fn deserialize-part})))
+   (fn [r c]
+     (assoc r (:id c) (if (= :raw (:type c)) c (populate-fn c))))
+   {}
+   (-db-parts (merge {:part_no nil :parent_part_no (:id part)}
+                     (mm->sql-id-params structure))
+              {:connection db
+               :row-fn deserialize-part})))
 
 (s/defn ^:always-validate populate-structures :- ps/StructuredPart
   [db, part :- {:id ids/PartNo s/Any s/Any}, with-descendants, recursive]
   (let [part-routes (get-active-routes db part)
         s (reduce
-            (fn [r s]
-              (let [c (if with-descendants
-                        (get-component-parts
-                          db part s
-                          #(populate-structures db % recursive recursive))
-                        {})
-                    s (-> (add-routes-to-structure db part s part-routes)
-                          (assoc :components c))]
-                (assoc r (mm/short-mm (:id s)) s)))
-            {}
-            (-db-structures
-              {:part_no (:id part)}
-              {:connection db
-               :row-fn deserialize-structure}))
+           (fn [r s]
+             (let [c (if with-descendants
+                       (get-component-parts
+                        db part s
+                        #(populate-structures db % recursive recursive))
+                       {})
+                   s (-> (add-routes-to-structure db part s part-routes)
+                         (assoc :components c))]
+               (assoc r (mm/short-mm (:id s)) s)))
+           {}
+           (-db-structures
+            {:part_no (:id part)}
+            {:connection db
+             :row-fn deserialize-structure}))
         siu (mm/preferred-mm (map :id (vals s)))]
     {:id (:id part)
      :type :structured
@@ -217,9 +211,9 @@
 (s/defn ^:always-validate -ifs-active-parts :- [ps/ActivePart]
   [part-store]
   (-db-active-parts
-    {}
-    {:connection (:db part-store)
-     :row-fn #(sq/to-clj % {:low-level-code int-serializer})}))
+   {}
+   {:connection (:db part-store)
+    :row-fn #(sq/to-clj % {:low-level-code int-serializer})}))
 
 (s/defn ^:always-validate -ifs-part :- (s/maybe ps/Part)
   ([part-store part] (-ifs-part part-store part true))
@@ -248,68 +242,5 @@
 
 (defn ifs-part-store []
   (component/using
-    (map->IFSPartStore {})
-    [:db]))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; On the chopping block
-
-(defn process-part
-  "Calculates the best end dates/CCRs for the active structures and routings
-  of the given part.
-
-  Returns a tuple of `[best-end-dates route-ccr-updates structure-ccr-updates]`
-  where `best-end-dates` is a map of structure IDs to records that contain, at
-  least, the calculated best end date when using the default routing, and the
-  two `-updates` elements are collections of database update records reflecting
-  any changes from the current state.
-
-  Takes, as arguments:
-
-  * `db` a JDBC database specification
-  * `part` a part record
-  * `best-assembly-dates`, optional, a map of structure IDs to records that
-    contain their best end dates. Used as a lookup for the availability dates
-    of components (the `best-end-dates` return value of this `fn` matches this
-    format, to enable recursive calls and processing BOMs bottom up)"
-  ([db part] (process-part db part {}))
-  ([db part best-assembly-dates]
-   (let [routes (route/deferred-routes db part)
-         structs (struct/deferred-structs db part)
-         route-updates (promise)
-         _ (async/go
-             (let [u (route/process-routes db @routes)]
-               (deliver route-updates u)))
-         best-end-dates (promise)
-         struct-updates (promise)
-         _ (async/go
-             (let [[b u] (struct/process-structs
-                           db @structs @routes best-assembly-dates)]
-               (deliver best-end-dates b)
-               (deliver struct-updates u)))]
-     [@best-end-dates @route-updates @struct-updates])))
-
-(defn process-parts
-  "Processes a collection of parts in parallel, passing each to `process-part`
-  and returning a concatenation of the results."
-  ([db parts] (process-parts db parts {}))
-  ([db parts best-assembly-dates]
-   (reduce
-     (fn [[bed ru su] [b r s]]
-       [(merge bed b) (concat ru r) (concat su s)])
-     [{} [] []]
-     (parallel-process #(process-part db % best-assembly-dates) parts))))
-
-(defn process-part-batches
-  "Processes a collection of collections of parts, passing each batch of parts
-  to `process-parts` _with the `best-end-dates` of all preceding batches_ and
-  returning a concatenation of the results."
-  [db batches]
-  (reduce
-    (fn [[bed ru su] parts]
-      (let [[b r s] (process-parts db parts bed)]
-        [(merge bed b)
-         (concat ru r)
-         (concat su s)]))
-    [{} [] []]
-    batches))
+   (map->IFSPartStore {})
+   [:db]))

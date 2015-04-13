@@ -1,8 +1,7 @@
 (ns route-ccrs.main
-  (:require [route-ccrs.core :refer [calculate-and-record-ccrs!]]
-            [route-ccrs.system :as sys])
+  (:require [route-ccrs.system :as sys])
   (:gen-class))
 
 (defn -main [& args]
   (let [s (sys/start (sys/system))]
-    (calculate-and-record-ccrs! s)))
+    (println "Batch processing unavailable due to refactoring")))
