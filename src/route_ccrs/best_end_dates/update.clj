@@ -1,4 +1,15 @@
-(ns route-ccrs.best-end-dates.calculation
+(ns route-ccrs.best-end-dates.update
+  "Provides methods for updating end dates within part, structure, and
+  routing records:
+
+  * `remove-best-end-dates` returns a copy of a part structure with
+    all of the best end dates, at every level, removed. Useful for
+    starting from a blank slate.
+  * `update-best-end-date` returns a copy of a part, structure, or
+    routing with an updated best end date.
+  * `update-all-best-end-dates-under-part` returns a copy of a part
+    with the best end date of itself and every child record (structures,
+    routings, components) at every level updated."
   (:require [schema.core :as s]
             [clj-time.core :as t]
             [route-ccrs.schema.dates :refer [Date]]
@@ -8,43 +19,29 @@
             [route-ccrs.util.schema-dispatch :refer [get-schema]]
             [clojure.zip :as zip]
             [route-ccrs.part-zipper :as pz :refer [part-zipper]]
-            [route-ccrs.start-dates :refer [start-date]]
             [route-ccrs.best-end-dates.protocols :refer :all]
-            [route-ccrs.routes.calculation :refer [update-route-calculation]]))
+            [route-ccrs.best-end-dates.sourcing :refer :all]
+            [route-ccrs.routes.calculation :refer [update-route-calculation]]
+            [route-ccrs.start-dates :refer [start-date]]))
+
+(declare ^:private -update-best-end-date)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; End date calculation/update methods
+;; Private node update methods
+
+(defn remove-best-end-date
+  "Given a part-zipper location returns the same location modified so
+  that its value doesn't contain a best end date."
+  [n]
+  (if (nil? (s/check rs/CalculatedRoute (pz/node-val n)))
+    (pz/edit-val n #(apply dissoc % (keys rs/RouteCalculationResults)))
+    (pz/edit-val n assoc :best-end-date nil)))
 
 (defn update-purchased-end-date
   "Returns `r` updated with a new end date based on its lead time,
   the start date `sd`, and the `IntervalEndDateCalculator` `edc`."
   [r edc sd]
   (assoc r :best-end-date (interval-end-date edc (:lead-time r) sd)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Private multi-method declarations
-
-(defmulti ^:private -end-date-from-source
-  (fn [r edc sd] (first (:source r))))
-
-(defmethods -end-date-from-source [{[_ s] :source, :as r} c sd]
-  :fixed-leadtime (interval-end-date c s sd)
-  :fictitious (or sd (t/today))
-  :stock (or sd (t/today))
-  :shop-order (shop-order-end-date c s)
-  :purchase-order (purchase-order-end-date c s))
-
-(defmethod -end-date-from-source :default [r _ _]
-  (if-let [s (:source r)]
-    (throw (IllegalArgumentException.
-             (str s " is not a valid end date source")))
-    nil))
-
-(defmulti ^:private -update-best-end-date
-  (fn [r edc sd]
-    (if (sourced? r)
-      :source
-      (get-schema -update-best-end-date r))))
 
 (defn update-child-end-date
   "Returns a fn that takes a record `r`, end date calculator `edc`
@@ -57,8 +54,17 @@
     (let [i (get r ik)]
       (assoc-in r [mk i] (-update-best-end-date (get (get r mk) i) edc sd)))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Private multi-method declarations
+
+(defmulti ^:private -update-best-end-date
+  (fn [r edc sd]
+    (if (sourced? r)
+      :source
+      (get-schema -update-best-end-date r))))
+
 (defmethod -update-best-end-date :source [r edc sd]
-  (assoc r :best-end-date (-end-date-from-source r edc sd)))
+  (assoc r :best-end-date (end-date-from-source r edc sd)))
 
 (.addMethod -update-best-end-date
             rs/Route
@@ -82,28 +88,22 @@
 
 (defmethod -update-best-end-date :default [r _ _]
   (throw (IllegalArgumentException.
-           (str "no schema matches " r))))
+          (str "no schema matches " r))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public
 
-(s/defn end-date-from-source :- (s/maybe Date)
-  "Returns the end date of the defined `:source` in `r`,
-  using `edc` to calculate or resolve the end date as required.
-
-  `edc` **must** implement the `EndDateResolver` and
-  `IntervalEndDateCalculator` protocols.
-
-  End dates will be resolved from the start date `sd` if provided.
-
-  Returns `nil` if `r` has no source defined or the end date cannot be
-  resolved and throws an `IllegalArgumentException` if the defined
-  source is invalid."
-  ([r :- ps/Sourced edc] (end-date-from-source r edc (t/today)))
-  ([r :- ps/Sourced edc sd :- Date]
-   {:pre [(satisfies? EndDateResolver edc)
-          (satisfies? IntervalEndDateCalculator edc)]}
-   (-end-date-from-source r edc sd)))
+(s/defn remove-best-end-dates :- ps/Part
+  "Returns a copy of `part` with all current `best-end-dates` values
+  removed (or set to `nil`, as appropriate.)"
+  [part :- ps/Part]
+  (loop [loc (part-zipper part)]
+    (if (zip/end? loc)
+      (pz/root-part loc)
+      (let [n (if (:best-end-date (pz/node-val loc))
+                (remove-best-end-date loc)
+                loc)]
+        (recur (zip/next n))))))
 
 (defn update-best-end-date
   "Returns a copy of the record `r` with an updated best end date, using

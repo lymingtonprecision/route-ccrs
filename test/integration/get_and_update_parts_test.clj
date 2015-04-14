@@ -8,8 +8,7 @@
             [route-ccrs.test-util :as tu]
             [yesql.core :refer [defquery]]
 
-            [route-ccrs.best-end-dates :as bed]
-            [route-ccrs.best-end-dates.calculation :as bedc]
+            [route-ccrs.best-end-dates.update :refer :all]
             [route-ccrs.part-store :as ps]))
 
 (defn wrap-with-test-system [test-fn]
@@ -29,10 +28,10 @@
    (let [dc (:date-calculator @tu/test-system)
          p (->> pno
                 (ps/get-part (:part-store @tu/test-system))
-                bed/remove-best-end-dates)
-         up (bedc/update-all-best-end-dates-under-part p dc)]
+                remove-best-end-dates)
+         up (update-all-best-end-dates-under-part p dc)]
      (is (not= p up))
-     (is (= p (bed/remove-best-end-dates up))))))
+     (is (= p (remove-best-end-dates up))))))
 
 (defspec ^:integration updating-structured-part-end-dates
   (prop/for-all
@@ -41,7 +40,7 @@
    (let [dc (:date-calculator @tu/test-system)
          p (->> pno
                 (ps/get-part (:part-store @tu/test-system))
-                bed/remove-best-end-dates)
-         up (bedc/update-all-best-end-dates-under-part p dc)]
+                remove-best-end-dates)
+         up (update-all-best-end-dates-under-part p dc)]
      (is (not= p up))
-     (is (= p (bed/remove-best-end-dates up))))))
+     (is (= p (remove-best-end-dates up))))))

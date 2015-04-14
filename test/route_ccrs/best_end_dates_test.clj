@@ -1,199 +1,16 @@
 (ns route-ccrs.best-end-dates-test
   (:require [clojure.test :refer :all]
             [clojure.test.check.clojure-test :refer [defspec]]
-            [clojure.test.check.generators :as gen]
             [clojure.test.check.properties :as prop]
-            [com.gfredericks.test.chuck.properties :as prop']
             [schema.core :as s]
             [schema.test]
             [clj-time.core :as t]
             [route-ccrs.schema.purchased-raw-part-test :refer [gen-raw-part]]
-            [route-ccrs.schema.structured-part-test :as spt]
-            [route-ccrs.schema.structures.manufacturing-test :as mpt]
-            [route-ccrs.schema.parts :refer [Part]]
             [route-ccrs.best-end-dates :refer :all]))
-
-(def ^:dynamic *max-multilevel-depth* 5)
 
 (use-fixtures :once schema.test/validate-schemas)
 
-(defn gen-date [] (t/plus (t/today) (t/days (rand-int 100))))
-
-(defn gen-complex-struct-with-dates []
-  (let [d (repeatedly 5 gen-date)
-        s {:id "100102347R01"
-           :type :structured
-           :best-end-date nil
-           :struct-in-use 1
-           :structs
-           {1 {:id {:type :manufactured :revision 1 :alternative "*"}
-               :route-in-use 1
-               :routes
-               {1 {:id {:type :manufactured :revision 1 :alternative "*"}
-                   :best-end-date (nth d 0)
-                   :ccr nil
-                   :total-touch-time 50
-                   :total-buffer 5
-                   :operations [{:id 10
-                                 :work-center {:id "MC032"
-                                               :type :internal
-                                               :hours-per-day 8
-                                               :potential-ccr? true}
-                                 :touch-time 10}]}}
-               :components
-               {1 {:id "100110028R01"
-                   :type :raw
-                   :lead-time 10
-                   :best-end-date nil}
-                2 {:id "100118022R01"
-                   :type :raw
-                   :lead-time 10
-                   :best-end-date (nth d 1)}
-                3 {:id "100112049R02"
-                   :type :structured
-                   :best-end-date nil
-                   :struct-in-use 1
-                   :structs
-                   {1 {:id {:type :purchased :revision 1 :alternative "*"}
-                       :lead-time 10
-                       :best-end-date (nth d 2)
-                       :components {}}
-                    2 {:id {:type :manufactured :revision 1 :alternative "1"}
-                       :route-in-use 1
-                       :routes
-                       {1 {:id {:type :manufactured :revision 1 :alternative "*"}
-                           :best-end-date (nth d 3)
-                           :ccr nil
-                           :total-touch-time 50
-                           :total-buffer 5
-                           :operations [{:id 10
-                                         :work-center {:id "OW003"
-                                                       :type :external
-                                                       :hours-per-day 24
-                                                       :potential-ccr? false}
-                                         :touch-time 240}]}}
-                       :components
-                       {1 {:id "100120035R01"
-                           :type :raw
-                           :lead-time 5
-                           :best-end-date (nth d 4)}}}}}}}}}
-        bed {"100102347R01"
-             {{:type :manufactured :revision 1 :alternative "*"}
-              {{:type :manufactured :revision 1 :alternative "*"}
-               {:best-end-date (nth d 0)}}}
-             "100118022R01"
-             {:best-end-date (nth d 1)}
-             "100112049R02"
-             {{:type :purchased :revision 1 :alternative "*"}
-              {:best-end-date (nth d 2)}
-              {:type :manufactured :revision 1 :alternative "1"}
-              {{:type :manufactured :revision 1 :alternative "*"}
-               {:best-end-date (nth d 3)}}}
-             "100120035R01"
-             {:best-end-date (nth d 4)}}]
-    [s d bed]))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; best-end-dates
-(defspec best-end-dates-returns-raw-part-end-date
-  (prop/for-all [p (gen-raw-part)]
-                (let [ex (if (:best-end-date p)
-                           {(:id p) {:best-end-date (:best-end-date p)}}
-                           {})]
-                  (is (= ex (best-end-dates p))))))
-
-(defn end-dates [c]
-  (reduce
-   (fn [r e]
-     (if-let [ed (:best-end-date e)]
-       (assoc r (:id e) ed)
-       r))
-   {}
-   c))
-
-(defn structure-end-dates [p]
-  (->> p :structs vals end-dates))
-
-(defn route-end-dates [p]
-  (->> p :structs vals
-       (map #(->> % :routes vals))
-       (apply concat)
-       (map best-end-dates)
-       (apply merge)))
-
-(defn dissoc-nils [m]
-  (reduce
-   (fn [r [k v]]
-     (if (nil? v)
-       r
-       (assoc r k v)))
-   {}
-   m))
-
-(deftest best-end-dates-returns-entries-from-all-levels
-  (let [[s d ex] (gen-complex-struct-with-dates)]
-    (is (= ex (best-end-dates s)))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; remove-best-end-dates
-
-(defspec raw-part-end-date-removal
-  (prop/for-all [p (gen-raw-part)]
-                (is (= (assoc p :best-end-date nil)
-                       (remove-best-end-dates p)))))
-
-(deftest purchased-structure-best-end-date-removal
-  (let [s {:id "100102457R01"
-           :type :structured
-           :best-end-date nil
-           :struct-in-use 1
-           :structs
-           {1 {:id {:type :purchased :revision 1 :alternative "*"}
-               :lead-time 10
-               :best-end-date (java.util.Date.)
-               :components {}}}}
-        ex (assoc-in s [:structs 1 :best-end-date] nil)]
-    (is (= ex (remove-best-end-dates s)))))
-
-(deftest routing-best-end-date-removal
-  (let [r {:id "100120785R01"
-           :type :structured
-           :best-end-date nil
-           :struct-in-use 1
-           :structs
-           {1 {:id {:type :manufactured :revision 1 :alternative "*"}
-               :components {}
-               :route-in-use 1
-               :routes
-               {1 {:id {:type :manufactured :revision 1 :alternative "*"}
-                   :operations [{:id 10
-                                 :work-center {:id "MC032"
-                                               :type :internal
-                                               :hours-per-day 8
-                                               :potential-ccr? true}
-                                 :touch-time 10}]}}}}}
-        red (update-in r [:structs 1 :routes 1] assoc
-                       :best-end-date (java.util.Date.)
-                       :ccr nil
-                       :total-touch-time 10
-                       :total-buffer 20)]
-    (is (= r (remove-best-end-dates red)))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; update-best-end-dates
-
-(deftest best-end-date-edit-roundtrip
-  (let [[p _ _] (gen-complex-struct-with-dates)
-        p (reduce
-            (fn [r p]
-              (update-in r p
-                         dissoc
-                         :best-end-date :ccr :total-touch-time :total-buffer))
-            p
-            [[:structs 1 :routes 1]
-             [:structs 1 :components 3 :structs 2 :routes 1]])
-        ed (best-end-dates p)]
-    (is (= (update-best-end-dates (remove-best-end-dates p) ed) p))))
+(defn rand-date [] (t/plus (t/today) (t/days (rand-int 999))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; best-end-date
@@ -203,7 +20,7 @@
                 (is (= (:best-end-date p) (best-end-date p)))))
 
 (deftest purchased-structure-best-end-date
-  (let [d (gen-date)
+  (let [d (rand-date)
         ps {:id {:type :purchased :revision 1 :alternative "*"}
             :lead-time 10
             :components {}
@@ -223,7 +40,7 @@
 
 (deftest calculated-route-best-end-date
   (let [r {:id {:type :manufactured :revision 1 :alternative "*"}
-           :best-end-date (gen-date)
+           :best-end-date (rand-date)
            :ccr nil
            :total-touch-time 10
            :total-buffer 5
@@ -241,7 +58,7 @@
                          :type :internal
                          :hours-per-day 8
                          :potential-ccr? true}}
-        d (gen-date)
+        d (rand-date)
         s {:id {:type :manufactured :revision 1 :alternative "*"}
            :components {}
            :route-in-use 812
@@ -274,8 +91,8 @@
                          :type :internal
                          :hours-per-day 8
                          :potential-ccr? true}}
-        d1 (gen-date)
-        d2 (gen-date)
+        d1 (rand-date)
+        d2 (rand-date)
         p {:id "100105644R01"
            :type :structured
            :best-end-date nil
