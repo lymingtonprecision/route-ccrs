@@ -18,7 +18,7 @@
 
                  [org.clojure/java.jdbc "0.3.6"]
                  [org.clojars.zentrope/ojdbc "11.2.0.3.0"]
-                 [hikari-cp "1.1.1"]
+                 [hikari-cp "1.2.2"]
                  [yesql "0.5.0-rc2"]
                  [squirrel "0.1.1"]
                  [ragtime "0.3.8"]]
