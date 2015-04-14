@@ -25,8 +25,9 @@
 
 (defn gen-calculated-route
   ([] (gen-calculated-route {}))
-  ([{:keys [id operations results]
+  ([{:keys [id operations results description]
      :or {id (gen-valid-id)
+          description gen/string-ascii
           operations (gen/one-of
                        [(gen/return {})
                         (gen/hash-map
@@ -37,7 +38,7 @@
    (gen/fmap
      (partial apply merge)
      (gen/tuple
-       (gen/hash-map :id id)
+       (gen/hash-map :id id :description description)
        operations
        results))))
 

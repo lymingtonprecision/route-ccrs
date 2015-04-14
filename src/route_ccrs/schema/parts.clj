@@ -53,6 +53,7 @@
   `:lead-time` zero, or a positive integer
   `:best-end-date` nil, or a valid `Date`"
   {:id id/PurchasedMethodId
+   (s/optional-key :description) (s/maybe s/Str)
    :components ComponentList
    :lead-time int-gte-zero
    :best-end-date (s/maybe Date)})
@@ -83,6 +84,7 @@
   schema are permitted."
   (map->Routed
     {:id id/ManufacturedMethodId
+     (s/optional-key :description) (s/maybe s/Str)
      :components ComponentList}
     route-types-match-structure?))
 
@@ -136,6 +138,14 @@
   key within the `:structs` collection."
   (map->Structured {s/Any s/Any}))
 
+(def common-part-fields
+  {:id id/PartNo
+   (s/optional-key :customer-part) (s/maybe s/Str)
+   (s/optional-key :issue) (s/maybe s/Str)
+   (s/optional-key :description) (s/maybe s/Str)
+   :best-end-date (s/maybe Date)
+   (s/optional-key :source) Source})
+
 (def StructuredPart
   "A structured part *must* have the fields:
 
@@ -149,10 +159,7 @@
 
   No other fields are permitted."
   (map->Structured
-    {:id id/PartNo
-     :type (s/eq :structured)
-     :best-end-date (s/maybe Date)
-     (s/optional-key :source) Source}))
+    (assoc common-part-fields :type (s/eq :structured))))
 
 (def PurchasedRawPart
   "A purchased raw part *must* have the fields:
@@ -166,11 +173,10 @@
   `:source` entry.
 
   No other fields are permitted."
-  {:id id/PartNo
-   :type (s/eq :raw)
-   :lead-time int-gte-zero
-   :best-end-date (s/maybe Date)
-   (s/optional-key :source) Source})
+  (merge
+    common-part-fields
+    {:type (s/eq :raw)
+     :lead-time int-gte-zero}))
 
 (def Part
   "A part is a record that has the fields:

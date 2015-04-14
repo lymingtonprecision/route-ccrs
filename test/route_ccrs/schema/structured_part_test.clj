@@ -28,9 +28,12 @@
 
 (defn gen-structured-part
   ([] (gen-structured-part {}))
-  ([{:keys [id type structs best-end-date source]
+  ([{:keys [id type structs best-end-date source customer-part issue description]
      :or {id pn/gen-part-no
           type (gen/return :structured)
+          customer-part gen/string-ascii
+          issue gen/string-ascii
+          description gen/string-ascii
           ; `:best-end-date` `nil`, or a valid `Date`
           best-end-date (gen/one-of [(gen/return nil) gen-date])
           ; it *must* conform to the `StructuredItem` schema
@@ -45,6 +48,9 @@
       (gen/hash-map
         :id id
         :type type
+        :customer-part customer-part
+        :issue issue
+        :description description
         :best-end-date best-end-date)
       structs
       source))))

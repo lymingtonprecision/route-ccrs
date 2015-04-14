@@ -8,7 +8,9 @@ select
   ) route__type,
   ro.routing_revision route__revision,
   ro.alternative_no route__alternative,
+  ra.alternative_description route__description,
   ro.operation_no id,
+  ro.operation_description description,
   round(
     -- calculate per unit run time
     case ro.run_time_code_db
@@ -61,6 +63,7 @@ select
   ) touch_time,
   --
   ro.work_center_no work_center,
+  wc.description work_center_description,
   wc.average_capacity hours_per_day,
   decode(
     wc.work_center_code_db,
@@ -70,6 +73,12 @@ select
   ) type,
   wc_ccr.value_text potential_ccr
 from ifsapp.routing_operation ro
+join ifsapp.routing_alternate ra
+  on ro.contract = ra.contract
+  and ro.part_no = ra.part_no
+  and ro.bom_type_db = ra.bom_type_db
+  and ro.routing_revision = ra.routing_revision
+  and ro.alternative_no = ra.alternative_no
 --
 join ifsapp.inventory_part_planning ipp
   on ro.contract = ipp.contract

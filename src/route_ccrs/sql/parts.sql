@@ -1,5 +1,8 @@
 select
   ip.part_no id,
+  ipcp.cust_part_no customer_part,
+  ipcp.issue issue,
+  ipcp.description,
   decode(
     ip.type_code_db,
     3, 'raw',
@@ -16,6 +19,8 @@ select
     null
   ) best_end_date
 from ifsapp.inventory_part ip
+join ifsinfo.inv_part_cust_part_no ipcp
+  on ip.part_no = ipcp.part_no
 where ip.contract = 'LPE'
   and (
     (:part_no is not null and ip.part_no = :part_no) or

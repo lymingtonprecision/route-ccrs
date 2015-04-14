@@ -18,12 +18,14 @@
 
 (defn gen-operation
   ([] (gen-operation {}))
-  ([{:keys [id touch-time work-center]
+  ([{:keys [id touch-time work-center description]
      :or {id gen-valid-id
+          description gen/string-ascii
           touch-time gen/pos-int
           work-center wc/gen-work-center}}]
    (gen/hash-map
     :id id
+    :description description
     :touch-time touch-time
     :work-center work-center)))
 

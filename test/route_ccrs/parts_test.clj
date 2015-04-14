@@ -40,10 +40,13 @@
           {:type "manufactured" :revision "1" :alternative "*"}))))
 
 (deftest deserialize-route-operation-test
-  (is (= {:route {:type :manufactured :revision 1 :alternative "*"}
+  (is (= {:route {:type :manufactured :revision 1 :alternative "*"
+                  :description "Default Method of Manufacture"}
           :id 10
+          :description "CNC Lathe"
           :touch-time 25
           :work-center {:id "MC032"
+                        :description "Mazak Integrex 200Y"
                         :type :internal
                         :hours-per-day 8.1
                         :potential-ccr? true}}
@@ -51,9 +54,12 @@
           {:route__type "manufactured"
            :route__revision "1"
            :route__alternative "*"
+           :route__description "Default Method of Manufacture"
            :id 10M
+           :description "CNC Lathe"
            :touch_time 25.001
            :work_center "MC032"
+           :work_center_description "Mazak Integrex 200Y"
            :type "internal"
            :hours_per_day 8.1
            :potential_ccr "Y"}))))
@@ -63,11 +69,14 @@
         s {:type "manufactured"
            :revision "1"
            :alternative "*"
+           :description "Default Method of Manufacture"
            :lead_time 10
            :best_end_date d}]
-    (is (= {:id {:type :manufactured :revision 1 :alternative "*"}}
+    (is (= {:id {:type :manufactured :revision 1 :alternative "*"}
+            :description "Default Method of Manufacture"}
            (deserialize-structure s)))
     (is (= {:id {:type :purchased :revision 1 :alternative "*"}
+            :description "Default Method of Manufacture"
             :lead-time 10
             :best-end-date (tc/to-local-date d)}
            (deserialize-structure (assoc s :type "purchased"))))))

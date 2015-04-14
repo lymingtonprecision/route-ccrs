@@ -26,6 +26,9 @@
      (gen/tuple
        (gen/hash-map
          :id id
+         :customer-part (gen/return nil)
+         :issue (gen/return nil)
+         :description gen/string-ascii
          :type type
          :lead-time lead-time
          :best-end-date best-end-date)

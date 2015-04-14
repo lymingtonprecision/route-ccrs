@@ -37,6 +37,12 @@
                                                (raw/gen-raw-part)))]
                 (not-valid-to-schema Structure s)))
 
+(defspec structures-can-have-descriptions
+  (prop/for-all [s (gen/fmap (fn [[s d]]
+                               (assoc s :description d))
+                             (gen/tuple gen-valid-structure gen/string-ascii))]
+                (is-valid-to-schema Structure s)))
+
 (defspec valid-structures-are-any-valid-subtype
   (prop/for-all [s gen-valid-structure]
                 (is-valid-to-schema Structure s)))

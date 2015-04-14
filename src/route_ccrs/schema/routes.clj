@@ -39,6 +39,7 @@
     time of the operation
   * `:work-center` a valid `WorkCenter` record"
   {:id OperationId
+   (s/optional-key :description) (s/maybe s/Str)
    :touch-time touch-time
    :work-center WorkCenter})
 
@@ -83,6 +84,7 @@
   value."
   (merge
    {:id ManufacturedMethodId
+    (s/optional-key :description) (s/maybe s/Str)
     :operations (s/both [Operation] (s/pred not-empty 'not-empty))}
    (reduce
     (fn [r [k _]]
@@ -99,6 +101,7 @@
   or a collection of `Operation` records."
   (merge
    {:id ManufacturedMethodId
+    (s/optional-key :description) (s/maybe s/Str)
     (s/optional-key :operations) [Operation]}
    RouteCalculationResults))
 

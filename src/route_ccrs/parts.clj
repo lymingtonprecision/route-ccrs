@@ -82,7 +82,7 @@
                         :lead-time int-serializer
                         :best-end-date date-serializer})
         id (select-keys r [:type :revision :alternative])
-        s {:id id}]
+        s {:id id :description (:description r)}]
     (if (= :purchased (:type id))
       (assoc s
              :lead-time (:lead-time r)
@@ -99,8 +99,10 @@
       ((fn [x]
          {:route (:route x)
           :id (:id x)
+          :description (:description x)
           :touch-time (:touch-time x)
           :work-center {:id (:work-center x)
+                        :description (:work-center-description x)
                         :type (:type x)
                         :hours-per-day (:hours-per-day x)
                         :potential-ccr? (:potential-ccr x)}}))))
@@ -118,10 +120,11 @@
   [db part :- {:id ids/PartNo s/Any s/Any}]
   (reduce
    (fn [r ro]
-     (let [rid (:route ro)
+     (let [rid (-> ro :route (dissoc :description))
+           rd (-> ro :route :description)
            k (mm/short-mm rid)
            o (dissoc ro :route)
-           route (get r k {:id rid :operations []})]
+           route (get r k {:id rid :description rd :operations []})]
        (assoc r k (update-in route [:operations] conj o))))
    {}
    (-db-active-routes {:part_no (:id part)}

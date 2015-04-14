@@ -80,6 +80,7 @@ following access rights:
     grant select on ifsapp.inventory_part to routeccr;
     grant select on ifsapp.inventory_part_planning to routeccr;
     grant select on ifsapp.inventory_part_status_par to routeccr;
+    grant select on ifsinfo.inv_part_cust_part_no to routeccr;
     grant select on ifsapp.manuf_part_attribute to routeccr;
     grant select on ifsapp.prod_structure to routeccr;
     grant select on ifsapp.prod_structure_head to routeccr;
