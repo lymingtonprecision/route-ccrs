@@ -10,7 +10,7 @@
 
             [route-ccrs.best-end-dates :as bed]
             [route-ccrs.best-end-dates.calculation :as bedc]
-            [route-ccrs.parts :as ps]))
+            [route-ccrs.part-store :as ps]))
 
 (defn wrap-with-test-system [test-fn]
   (tu/start-test-system)
@@ -25,23 +25,23 @@
 
 (defspec ^:integration updating-raw-part-end-dates
   (prop/for-all
-    [pno (gen/elements (-raw-parts {} {:connection (:db @tu/test-system)}))]
-    (let [dc (:date-calculator @tu/test-system)
-          p (->> pno
-                 (ps/get-part (:part-store @tu/test-system))
-                 bed/remove-best-end-dates)
-          up (bedc/update-all-best-end-dates-under-part p dc)]
-      (is (not= p up))
-      (is (= p (bed/remove-best-end-dates up))))))
+   [pno (gen/elements (-raw-parts {} {:connection (:db @tu/test-system)}))]
+   (let [dc (:date-calculator @tu/test-system)
+         p (->> pno
+                (ps/get-part (:part-store @tu/test-system))
+                bed/remove-best-end-dates)
+         up (bedc/update-all-best-end-dates-under-part p dc)]
+     (is (not= p up))
+     (is (= p (bed/remove-best-end-dates up))))))
 
 (defspec ^:integration updating-structured-part-end-dates
   (prop/for-all
-    [pno (gen/elements (-full-parts {:min_depth 0}
-                                    {:connection (:db @tu/test-system)}))]
-    (let [dc (:date-calculator @tu/test-system)
-          p (->> pno
-                 (ps/get-part (:part-store @tu/test-system))
-                 bed/remove-best-end-dates)
-          up (bedc/update-all-best-end-dates-under-part p dc)]
-      (is (not= p up))
-      (is (= p (bed/remove-best-end-dates up))))))
+   [pno (gen/elements (-full-parts {:min_depth 0}
+                                   {:connection (:db @tu/test-system)}))]
+   (let [dc (:date-calculator @tu/test-system)
+         p (->> pno
+                (ps/get-part (:part-store @tu/test-system))
+                bed/remove-best-end-dates)
+         up (bedc/update-all-best-end-dates-under-part p dc)]
+     (is (not= p up))
+     (is (= p (bed/remove-best-end-dates up))))))

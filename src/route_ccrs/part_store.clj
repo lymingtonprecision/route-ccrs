@@ -1,4 +1,4 @@
-(ns route-ccrs.parts
+(ns route-ccrs.part-store
   (:require [com.stuartsierra.component :as component]
             [schema.core :as s]
             [yesql.core :refer [defquery]]

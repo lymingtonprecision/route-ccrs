@@ -1,4 +1,4 @@
-(ns route-ccrs.parts-test
+(ns route-ccrs.part-store-test
   (:require [clojure.test :refer :all]
             [clojure.test.check.clojure-test :refer [defspec]]
             [clojure.test.check.generators :as gen]
@@ -13,7 +13,7 @@
             [clojure.zip :as zip]
             [route-ccrs.part-zipper :as pz]
 
-            [route-ccrs.parts :refer :all]))
+            [route-ccrs.part-store :refer :all]))
 
 (def ^:dynamic *default-db-test-count* 10)
 
