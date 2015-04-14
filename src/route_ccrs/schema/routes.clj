@@ -17,7 +17,8 @@
   `:id` a valid `WorkCenterId`
   `:type` either `:internal` or `:external`
   `:hours-per-day` a number greater than zero (integer or decimal/float)
-  `:potential-ccr?` a boolean"
+  `:potential-ccr?` a boolean
+  `:description` an optional string describing the work center"
   {:id WorkCenterId
    (s/optional-key :description) (s/maybe s/Str)
    :type (s/enum :internal :external)
@@ -37,7 +38,8 @@
   * `:id` a valid `OperationId`
   * `:touch-time` zero, or a positive integer; the number of minutes run
     time of the operation
-  * `:work-center` a valid `WorkCenter` record"
+  * `:work-center` a valid `WorkCenter` record
+  * `:description` an optional string describing the operation"
   {:id OperationId
    (s/optional-key :description) (s/maybe s/Str)
    :touch-time touch-time
@@ -77,7 +79,8 @@
 
 (def UncalculatedRoute
   "An uncalculated route consists of a valid `ManufacturedMethodId`,
-  `:id`, and a non-empty list of `Operation`s, `:operations`.
+  `:id`, a non-empty list of `Operation`s, `:operations`, and an optional
+  `:description`.
 
   It _may_ also contain all, some, or none of the `RouteCalculationResults`
   fields set to `nil`. None of these fields should be present with a non-nil
@@ -94,8 +97,8 @@
 
 (def CalculatedRoute
   "A calculated route consists of a valid `ManufacturedMethodId`,
-  `:id`, an optional list of `Operation`s, `:operations`, and a valid
-  set of `RouteCalculationResults` fields.
+  `:id`, an optional list of `Operation`s, `:operations`, an optional
+  `:description`, and a valid set of `RouteCalculationResults` fields.
 
   The `:operations` may be omitted entirely, an empty collection, `nil`,
   or a collection of `Operation` records."

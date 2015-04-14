@@ -51,7 +51,8 @@
   `:id` a valid `PurchasedMethodId`
   `:components` a valid `ComponentList` (cannot be `nil`)
   `:lead-time` zero, or a positive integer
-  `:best-end-date` nil, or a valid `Date`"
+  `:best-end-date` nil, or a valid `Date`
+  `:description` an optional string describing the structure"
   {:id id/PurchasedMethodId
    (s/optional-key :description) (s/maybe s/Str)
    :components ComponentList
@@ -75,6 +76,8 @@
   `:id` a valid `ManufacturedMethodId`
   `:components` a valid `ComponentList` (cannot be `nil`)
 
+  It may optionally have a `:description`.
+
   Additionally a manufacturing structure is a `RoutedItem` and so must
   also conform to that schema. Note that the `:routes` assigned to the
   structure *must* match its manufacturing method `:type` and cannot be
@@ -93,6 +96,8 @@
 
   `:id` a valid `ManufacturingMethod`
   `:components` a `ComponentList`
+
+  It may optionally have a `:description`.
 
   ... and any additional fields as dictated by the `:type` of its
   manufacturing method."
@@ -153,6 +158,12 @@
   `:type` set to `:structured`
   `:best-end-date` `nil`, or a valid `Date`
 
+  It may optionally have the fields:
+
+  `:customer-part` the customer part number
+  `:issue` the issue of the customer part this part represents
+  `:description` a description of the part
+
   It *must* also conform to the `StructuredItem` schema and may
   _optionally_ be a `Sourced` record, containing a non-nil `:source`
   entry.
@@ -169,6 +180,12 @@
   `:lead-time` zero, or a positive integer
   `:best-end-date` `nil`, or a valid `Date`
 
+  It may optionally have the fields:
+
+  `:customer-part` the customer part number
+  `:issue` the issue of the customer part this part represents
+  `:description` a description of the part
+
   It may _optionally_ be a `Sourced` record, containing a non-nil
   `:source` entry.
 
@@ -184,7 +201,8 @@
   `:id` a valid `PartNo`
   `:type` either `:raw` or `:structured`
 
-  ... and conforms to the schema corresponding to its type."
+  ... and conforms to the schema corresponding to its type
+  (`PurchasedRawPart` or `StructuredPart`, respectively.)"
   (s/both
     {:id id/PartNo
      :type (s/enum :raw :structured)
