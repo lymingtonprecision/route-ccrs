@@ -6,8 +6,6 @@
             [com.stuartsierra.component :as component]
             [environ.core :refer (env)]
             [clojure.java.jdbc :as jdbc]
-            [ragtime.core :as ragtime]
-            [ragtime.sql.database :as ragtime-db]
 
             [route-ccrs.system :as sys]
             [route-ccrs.database :as db]))
@@ -47,6 +45,3 @@
 (defn reset []
   (stop)
   (refresh :after 'user/go))
-
-(defn rollback-last []
-  (ragtime/rollback-last (ragtime-db/map->SqlDatabase (-> system :db))))
