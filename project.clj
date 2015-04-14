@@ -34,7 +34,7 @@
              :test {:source-paths ["dev" "src"]}
              :repl {:source-paths ["dev" "src"]}}
 
-  :test-selectors {:default (complement :db :integration)
+  :test-selectors {:default (fn [m] (not (some #(get m %) [:db :integration])))
                    :db :db
                    :integration :integration
                    :all (constantly true)}
