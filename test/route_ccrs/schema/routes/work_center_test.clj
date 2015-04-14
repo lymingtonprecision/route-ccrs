@@ -30,6 +30,7 @@
 (def gen-work-center
   (gen/hash-map
     :id gen-valid-id
+    :description gen/string-ascii
     :type (gen/elements work-center-types)
     :hours-per-day (gen-such-that pos? (gen/one-of [gen'/double gen/pos-int]))
     :potential-ccr? gen/boolean))
@@ -69,7 +70,11 @@
     b (gen-such-that #(not= (class %) java.lang.Boolean) gen/simple-type)]
    (not-valid (assoc wc :potential-ccr? b))))
 
-(defspec work-center-needs-all-fields
+(def work-center-fields
+  (keys (first (gen/sample gen-work-center))))
+
+(defspec work-center-needs-all-field-except-description
   (prop/for-all
-   [wc gen-work-center]
-   (not-valid (dissoc wc (rand-nth (keys wc))))))
+   [wc gen-work-center
+    k (gen/elements (remove #(= :description %) work-center-fields))]
+   (not-valid (dissoc wc k))))

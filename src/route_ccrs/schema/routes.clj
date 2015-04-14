@@ -19,6 +19,7 @@
   `:hours-per-day` a number greater than zero (integer or decimal/float)
   `:potential-ccr?` a boolean"
   {:id WorkCenterId
+   (s/optional-key :description) (s/maybe s/Str)
    :type (s/enum :internal :external)
    :hours-per-day (s/both s/Num (s/pred #(> % 0) 'non-zero-number))
    :potential-ccr? s/Bool})
