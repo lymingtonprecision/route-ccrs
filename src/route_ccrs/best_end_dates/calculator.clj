@@ -1,4 +1,4 @@
-(ns route-ccrs.best-end-dates.ifs
+(ns route-ccrs.best-end-dates.calculator
   "An implementation of the best end date protocols using a connection
   to an IFS database."
   (:require [com.stuartsierra.component :as component]

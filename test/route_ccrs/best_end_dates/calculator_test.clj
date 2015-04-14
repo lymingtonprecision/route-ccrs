@@ -1,4 +1,4 @@
-(ns route-ccrs.best-end-dates.ifs-test
+(ns route-ccrs.best-end-dates.calculator-test
   (:require [clojure.test :refer :all]
             [clojure.test.check.clojure-test :refer [defspec]]
             [clojure.test.check.generators :as gen]
@@ -12,7 +12,7 @@
             [clj-time.coerce :as tc]
 
             [route-ccrs.sql.serializers :refer :all]
-            [route-ccrs.best-end-dates.ifs :refer :all]))
+            [route-ccrs.best-end-dates.calculator :refer :all]))
 
 (def ^:dynamic *default-db-test-count* 10)
 

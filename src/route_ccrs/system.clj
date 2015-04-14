@@ -4,7 +4,7 @@
             [route-ccrs.logging :as log]
             [route-ccrs.database :as db]
             [route-ccrs.part-store :refer [ifs-part-store]]
-            [route-ccrs.best-end-dates.ifs :refer [ifs-date-calculator]]))
+            [route-ccrs.best-end-dates.calculator :refer [ifs-date-calculator]]))
 
 (defn system
   ([] (system env))
