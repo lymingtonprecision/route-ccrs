@@ -1,6 +1,6 @@
-(defproject route-ccrs "2.0.2"
-  :description "Calculates the current CCR for active routings in IFS"
-  :url "http://example.com/FIXME"
+(defproject lymingtonprecision.route-ccrs "3.0.0"
+  :description "A library for calculating part/routing end dates and CCRs"
+  :url "https://github.com/lymingtonprecision/route-ccrs"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.6.0"]

@@ -1,6 +1,13 @@
 (ns route-ccrs.best-end-dates.calculator
-  "An implementation of the best end date protocols using a connection
-  to an IFS database."
+  "Provides a component, `IFSDateCalculator`, that implements the best
+  end date protocols using a connection to an IFS database.
+
+  The component has a single dependency: a database connection, `:db`,
+  that can be used as the `db-spec` parameter in JDBC calls.
+
+  Please see the `route-ccrs.best-end-dates.protocols` namespace for
+  details of the implemented methods. All of the defined protocols
+  are implemented by this component."
   (:require [com.stuartsierra.component :as component]
             [schema.core :as s]
             [clj-time.coerce :as tc]
@@ -92,7 +99,9 @@
   ManufacturingEndDateCalculator
   {:work-center-end-date (wrap-db-fn -ifs-work-center-end-date)})
 
-(defn ifs-date-calculator []
+(defn ifs-date-calculator
+  "Creates and returns a new IFS Date Calculator component."
+  []
   (component/using
    (map->IFSDateCalculator {})
    [:db]))

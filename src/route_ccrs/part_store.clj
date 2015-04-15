@@ -1,4 +1,16 @@
 (ns route-ccrs.part-store
+  "Provides a component, `IFSPartStore`, for retrieving part records
+  from an IFS database.
+
+  The component has a single dependency: a database connection, `:db`,
+  that can be as the `db-spec` parameter in JDBC calls. Only two methods
+  are provided:
+
+  * `active-parts` which returns a collection of active part identifiers.
+  * `get-part` which returns the record for a specific part.
+
+  `get-part` returns part records matching the input schema of the other
+  fns in this library."
   (:require [com.stuartsierra.component :as component]
             [schema.core :as s]
             [yesql.core :refer [defquery]]
@@ -243,7 +255,9 @@
   {:active-parts -ifs-active-parts
    :get-part -ifs-part})
 
-(defn ifs-part-store []
+(defn ifs-part-store
+  "Creates and returns a new IFS Part Store component."
+  []
   (component/using
    (map->IFSPartStore {})
    [:db]))
