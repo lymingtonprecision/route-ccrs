@@ -27,13 +27,13 @@ Both components have a single dependency: a database connection,`:db`,
 that can be used as the `db-spec` in JDBC calls.
 
 This library makes no assumptions on how such a connection is
-established or provided but it is suggested that you use [Hikari CP]
-(and it's [Clojure bindings].) (Just be mindful of the `:minimum-idle`
-and `:maximum-pool-size` settings&mdash;we don't want to consume all
-the database processes.)
+established or provided but it is suggested that you use [Hikari
+CP][hikari-cp] (and it's [Clojure bindings][hikari-clj].) (Just be
+mindful of the `:minimum-idle` and `:maximum-pool-size`
+settings&mdash;we don't want to consume all the database processes.)
 
-[Hikari CP]: https://github.com/brettwooldridge/HikariCP
-[Clojure bindings]: https://github.com/tomekw/hikari-cp
+[hikari-cp]: https://github.com/brettwooldridge/HikariCP
+[hikari-clj]: https://github.com/tomekw/hikari-cp
 
 The vast majority of the `fn`s you will wish to use are in under the
 `route-ccrs.best-end-dates.*` namespaces. This covers updating and
