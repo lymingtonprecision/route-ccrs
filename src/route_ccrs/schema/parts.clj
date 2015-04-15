@@ -11,9 +11,9 @@
 (def ActivePart
   "An active part has *only* the fields:
 
-  `:part-no` a valid part number (see `PartNo`)
+  `:id` a valid part number (see `PartNo`)
   `:low-level-code` either zero or a positive integer"
-  {:part-no id/PartNo
+  {:id id/PartNo
    :low-level-code s/Int})
 
 (def Source

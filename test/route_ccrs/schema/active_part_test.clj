@@ -7,9 +7,9 @@
 (def part-no "100123456R01")
 
 (deftest active-part-records
-  (is-valid-to-schema ActivePart {:part-no part-no :low-level-code 0})
-  (not-valid-to-schema ActivePart {:part-no part-no})
-  (not-valid-to-schema ActivePart {:part-no part-no :low-level-code nil})
-  (not-valid-to-schema ActivePart {:part-no part-no :low-level-code "1"})
+  (is-valid-to-schema ActivePart {:id part-no :low-level-code 0})
+  (not-valid-to-schema ActivePart {:id part-no})
+  (not-valid-to-schema ActivePart {:id part-no :low-level-code nil})
+  (not-valid-to-schema ActivePart {:id part-no :low-level-code "1"})
   (not-valid-to-schema ActivePart {:low-level-code nil})
-  (not-valid-to-schema ActivePart {:part-no "invalid" :low-level-code 1}))
+  (not-valid-to-schema ActivePart {:id "invalid" :low-level-code 1}))

@@ -8,7 +8,7 @@ with active_part_statuses as (
 )
 -- purchased raw parts
 select
-  ip.part_no,
+  ip.part_no id,
   mpa.low_level low_level_code
 from ifsapp.inventory_part ip
 join ifsapp.manuf_part_attribute mpa
@@ -21,7 +21,7 @@ union all
 --
 -- structured parts
 select
-  ip.part_no,
+  ip.part_no id,
   mpa.low_level low_level_code
 from ifsapp.inventory_part ip
 join ifsapp.manuf_part_attribute mpa
