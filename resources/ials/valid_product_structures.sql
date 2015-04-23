@@ -6,7 +6,7 @@ select distinct
   asr.part_no,
   asr.eng_chg_level,
   asr.bom_type_db,
-  asr.structure_alternative
+  asr.structure_alternative alternative_no
 from ifsinfo.active_structure_routings asr
 --
 minus
