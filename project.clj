@@ -3,11 +3,13 @@
   :url "https://github.com/lymingtonprecision/route-ccrs"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.6.0"]
+  :dependencies [[org.clojure/clojure "1.7.0-beta2"]
                  [com.stuartsierra/component "0.2.3"]
                  [clj-time "0.9.0"]
-                 [prismatic/schema "0.4.0"]
-                 [yesql "0.5.0-rc2"]
+                 [prismatic/schema "0.4.1"]
+                 ; explicit instaparse for 1.7.x compatability
+                 [instaparse "1.3.6"]
+                 [yesql "0.5.0-rc2" :exclusions [instaparse]]
                  [squirrel "0.1.1"]]
 
   :jvm-opts ["-Duser.timezone=UTC"]
@@ -24,7 +26,7 @@
                                   [org.clojure/tools.namespace "0.2.10"]
 
                                   [org.clojure/test.check "0.7.0"]
-                                  [com.gfredericks/test.chuck "0.1.16"]]}
+                                  [com.gfredericks/test.chuck "0.1.17"]]}
              :test {:source-paths ["dev" "src"]}
              :repl {:source-paths ["dev" "src"]}}
 
