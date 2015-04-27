@@ -199,26 +199,27 @@
   [db, part :- {:id ids/PartNo s/Any s/Any}, with-descendants, recursive]
   (let [part-routes (get-active-routes db part)
         s (reduce
-           (fn [r s]
-             (let [c (if with-descendants
-                       (get-component-parts
-                        db part s
-                        #(populate-structures db % recursive recursive))
-                       {})
-                   s (-> (add-routes-to-structure db part s part-routes)
-                         (assoc :components c))]
-               (assoc r (mm/short-mm (:id s)) s)))
-           {}
-           (-db-structures
-            {:part_no (:id part)}
-            {:connection db
-             :row-fn deserialize-structure}))
+            (fn [r s]
+              (let [c (if with-descendants
+                        (get-component-parts
+                          db part s
+                          #(populate-structures db % recursive recursive))
+                        {})
+                    s (-> (add-routes-to-structure db part s part-routes)
+                          (assoc :components c))]
+                (assoc r (mm/short-mm (:id s)) s)))
+            {}
+            (-db-structures
+              {:part_no (:id part)}
+              {:connection db
+               :row-fn deserialize-structure}))
         siu (mm/preferred-mm (map :id (vals s)))]
-    {:id (:id part)
-     :type :structured
-     :best-end-date nil
-     :struct-in-use (mm/short-mm siu)
-     :structs s}))
+    (merge
+      (select-keys part (map s/explicit-schema-key (keys ps/common-part-fields)))
+      {:type :structured
+       :best-end-date nil
+       :struct-in-use (mm/short-mm siu)
+       :structs s})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Protocol implementation
