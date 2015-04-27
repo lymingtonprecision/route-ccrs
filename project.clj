@@ -35,7 +35,7 @@
 
   :cljsbuild {:builds
               {:test
-               {:source-paths ["src" "test/route_ccrs"]
+               {:source-paths ["src" "test"]
                 :compiler
                 {:optimizations :whitespace
                  :pretty-print true
