@@ -9,7 +9,7 @@
     (reduce
       (fn [r [v s]]
         (let [t (list 'fn '[x] (list '= '(first x) v))
-              v (s/one (s/eq v) nil)
+              v (list 's/one (list 's/eq v) nil)
               s (if s [v s] [v])]
           (conj r t s)))
       '(s/conditional)

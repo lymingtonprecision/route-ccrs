@@ -2,9 +2,6 @@
   "Provides methods for updating end dates within part, structure, and
   routing records:
 
-  * `remove-best-end-dates` returns a copy of a part structure with
-    all of the best end dates, at every level, removed. Useful for
-    starting from a blank slate.
   * `update-best-end-date` returns a copy of a part, structure, or
     routing with an updated best end date.
   * `update-all-best-end-dates-under-part` returns a copy of a part
@@ -12,10 +9,10 @@
     routings, components) at every level updated."
   (:require [schema.core :as s]
             [clj-time.core :as t]
-            [route-ccrs.schema.dates :refer [Date]]
-            [route-ccrs.schema.parts :as ps]
+            [route-ccrs.schema.dates :refer [DateInst]]
+            [route-ccrs.schema.parts :as ps :refer [sourced?]]
             [route-ccrs.schema.routes :as rs]
-            [route-ccrs.util :refer [defmethods sourced?]]
+            [route-ccrs.util :refer [defmethods]]
             [route-ccrs.util.schema-dispatch :refer [get-schema]]
             [clojure.zip :as zip]
             [route-ccrs.part-zipper :as pz :refer [part-zipper]]
@@ -28,14 +25,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Private node update methods
-
-(defn remove-best-end-date
-  "Given a part-zipper location returns the same location modified so
-  that its value doesn't contain a best end date."
-  [n]
-  (if (nil? (s/check rs/CalculatedRoute (pz/node-val n)))
-    (pz/edit-val n #(apply dissoc % (keys rs/RouteCalculationResults)))
-    (pz/edit-val n assoc :best-end-date nil)))
 
 (defn update-purchased-end-date
   "Returns `r` updated with a new end date based on its lead time,
@@ -93,18 +82,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public
 
-(s/defn remove-best-end-dates :- ps/Part
-  "Returns a copy of `part` with all current `best-end-dates` values
-  removed (or set to `nil`, as appropriate.)"
-  [part :- ps/Part]
-  (loop [loc (part-zipper part)]
-    (if (zip/end? loc)
-      (pz/root-part loc)
-      (let [n (if (:best-end-date (pz/node-val loc))
-                (remove-best-end-date loc)
-                loc)]
-        (recur (zip/next n))))))
-
 (defn update-best-end-date
   "Returns a copy of the record `r` with an updated best end date, using
   `edc` to resolve and calculate the new end dates and calculating
@@ -156,7 +133,7 @@
   protocols."
   ([p :- ps/Part, edc]
    (update-all-best-end-dates-under-part p edc (t/today)))
-  ([p :- ps/Part, edc, sd :- Date]
+  ([p :- ps/Part, edc, sd :- DateInst]
    {:pre [(satisfies? EndDateResolver edc)
           (satisfies? IntervalEndDateCalculator edc)
           (satisfies? ManufacturingEndDateCalculator edc)]}

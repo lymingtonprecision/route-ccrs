@@ -14,7 +14,7 @@
             [yesql.core :refer [defquery]]
             [bugsbio.squirrel :as sq]
             [route-ccrs.sql.serializers :refer :all]
-            [route-ccrs.schema.dates :refer [Date]]
+            [route-ccrs.schema.dates :refer [DateInst]]
             [route-ccrs.schema.ids :as ids]
             [route-ccrs.schema.routes :refer [WorkCenterId]]
             [route-ccrs.best-end-dates.protocols :refer :all]))
@@ -36,12 +36,12 @@
 (defquery -db-shop-order-end-date "route_ccrs/sql/shop_order_end_date.sql")
 (defquery -db-purchase-order-end-date "route_ccrs/sql/purchase_order_end_date.sql")
 
-(s/defn ^:always-validate -ifs-shop-order-end-date :- (s/maybe Date)
+(s/defn ^:always-validate -ifs-shop-order-end-date :- (s/maybe DateInst)
   [db order-id :- ids/ShopOrderId]
   (-db-shop-order-end-date (sq/to-sql order-id)
                            (merge results->end-date {:connection db})))
 
-(s/defn ^:always-validate -ifs-purchase-order-end-date :- (s/maybe Date)
+(s/defn ^:always-validate -ifs-purchase-order-end-date :- (s/maybe DateInst)
   [db order-id :- ids/PurchaseOrderId]
   (-db-purchase-order-end-date (sq/to-sql order-id)
                                (merge results->end-date {:connection db})))
@@ -51,11 +51,11 @@
 
 (defquery -db-interval-end-date "route_ccrs/sql/interval_end_date.sql")
 
-(s/defn ^:always-validate -ifs-interval-end-date :- Date
+(s/defn ^:always-validate -ifs-interval-end-date :- DateInst
   ([db days] (-ifs-interval-end-date db days nil))
   ([db
     days :- (s/both s/Num (s/pred #(>= % 0)))
-    start-date :- (s/maybe Date)]
+    start-date :- (s/maybe DateInst)]
    (-db-interval-end-date {:duration days
                            :start_date (if start-date
                                          (tc/to-sql-date start-date))}
@@ -66,7 +66,7 @@
 
 (defquery -db-wc-end-date "route_ccrs/sql/work_center_end_date.sql")
 
-(s/defn ^:always-validate -ifs-work-center-end-date :- (s/maybe Date)
+(s/defn ^:always-validate -ifs-work-center-end-date :- (s/maybe DateInst)
   ([db wc time-at-wc pre-wc-days post-wc-days]
    (-ifs-work-center-end-date db wc time-at-wc pre-wc-days post-wc-days nil))
   ([db
@@ -74,7 +74,7 @@
     time-at-wc :- (s/both s/Int (s/pred #(>= % 0)))
     pre-wc-days :- (s/both s/Num (s/pred #(>= % 0)))
     post-wc-days :- (s/both s/Num (s/pred #(>= % 0)))
-    start-date :- (s/maybe Date)]
+    start-date :- (s/maybe DateInst)]
    (-db-wc-end-date {:work_center wc
                      :total_touch_time time-at-wc
                      :pre_wc_buffer pre-wc-days

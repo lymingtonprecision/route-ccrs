@@ -11,6 +11,8 @@ Add the following dependency to your `project.clj` file:
 
 ## Usage
 
+### From Clojure
+
 There are two provided
 [components](https://github.com/stuartsierra/component):
 
@@ -35,9 +37,32 @@ settings&mdash;we don't want to consume all the database processes.)
 [hikari-cp]: https://github.com/brettwooldridge/HikariCP
 [hikari-clj]: https://github.com/tomekw/hikari-cp
 
-The vast majority of the `fn`s you will wish to use are in under the
+The vast majority of the `fn`s you will wish to use are under the
 `route-ccrs.best-end-dates.*` namespaces. This covers updating and
 extracting the end dates of part records, and their child records.
+
+### From ClojureScript
+
+Whilst ClojureScript clients can't expect to be able to directly use the
+components that interact with the database they _do_ have access to the
+schema and utility `fn`s that make working with the defined records a
+little bit easier.
+
+**Note:** this is dependant upon Clojure's [Reader
+Conditionals](http://dev.clojure.org/display/design/Reader+Conditionals)
+make sure you're using a version of ClojureScript that supports them.
+
+Currently the following namespaces are available in both runtimes:
+
+* `route-ccrs.schema.*`
+* `route-ccrs.best-end-dates`
+* `route-ccrs.best-end-dates.maps`
+* `route-ccrs.manufacturing-methods`
+* `route-ccrs.part-zipper`
+* `route-ccrs.start-dates`
+
+(See: [ClojureScript Client Dev](#clojurescript-client-dev) below for
+development details.)
 
 ### Example
 
@@ -140,6 +165,45 @@ components in this library must have the following access rights:
     grant execute on ifsapp.inventory_part_status_par_api to routeccr;
     grant execute on ifsapp.site_api to routeccr;
     grant execute on ifsapp.work_time_calendar_api to routeccr;
+
+## Running Tests
+
+The test suite is split into three pieces:
+
+* The schema and basic record manipulation/interrogation functions.
+
+      lein test route-ccrs.cljc-test
+
+* Retrieving records from an IFS database.
+
+      lein test :db
+
+* Full end-to-end integration tests.
+
+      lein test :integration
+
+(The basic tests need to be run by specifying a wrapper namespace,
+`route-ccrs.cljc-test`, because they're all now in `.cljc` files so
+that we can run them under ClojureScript too, and `lein test` doesn't
+currently load `.cljc` files directly.)
+
+## <a name="clojurescript-client-dev">ClojureScript Client Dev</a>
+
+Given that we're using reader conditionals, a beta version of Clojure,
+and all the bleeding edge dependencies that this feature requires this
+can be considered a "use at your own risk" branch.
+
+ClojureScript testing is currently very basic. It requires
+[PhantomJS](http://phantomjs.org/) to be available in the path and runs
+a very basic test runner that just includes all the tests we've made
+cross runtime (converted to `.cljc` files.)
+
+The `cljsbuild` hooks are currently disabled because it slows things
+down too much and there's no real need to have things compiled and
+tested concurrently. As such, you need to run `lein cljsbuild` tasks
+manually to check everything's still OK with the ClojureScript side of
+things. `lein clean` will remove the compiled Javascript files as
+they're output to the `target` directory.
 
 ## License
 

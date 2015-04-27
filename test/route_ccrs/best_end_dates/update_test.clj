@@ -5,59 +5,15 @@
             [schema.core :as s]
             [clj-time.core :as t]
             [clj-time.coerce :as tc]
-            [route-ccrs.schema.purchased-raw-part-test :refer [gen-raw-part]]
+            [route-ccrs.generators.raw-part :refer [gen-raw-part]]
             [route-ccrs.best-end-dates.dummy-resolver :refer :all]
             [route-ccrs.best-end-dates.protocols :refer :all]
+            [route-ccrs.best-end-dates :refer [remove-best-end-dates]]
             [route-ccrs.best-end-dates.update :refer :all]))
 
 (defn rand-days-from-date
   ([] (rand-days-from-date (t/today)))
   ([sd] (t/plus sd (t/days (rand-int 999)))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; remove-best-end-dates
-
-(defspec raw-part-end-date-removal
-  (prop/for-all [p (gen-raw-part)]
-                (is (= (assoc p :best-end-date nil)
-                       (remove-best-end-dates p)))))
-
-(deftest purchased-structure-best-end-date-removal
-  (let [s {:id "100102457R01"
-           :type :structured
-           :best-end-date nil
-           :struct-in-use 1
-           :structs
-           {1 {:id {:type :purchased :revision 1 :alternative "*"}
-               :lead-time 10
-               :best-end-date (java.util.Date.)
-               :components {}}}}
-        ex (assoc-in s [:structs 1 :best-end-date] nil)]
-    (is (= ex (remove-best-end-dates s)))))
-
-(deftest routing-best-end-date-removal
-  (let [r {:id "100120785R01"
-           :type :structured
-           :best-end-date nil
-           :struct-in-use 1
-           :structs
-           {1 {:id {:type :manufactured :revision 1 :alternative "*"}
-               :components {}
-               :route-in-use 1
-               :routes
-               {1 {:id {:type :manufactured :revision 1 :alternative "*"}
-                   :operations [{:id 10
-                                 :work-center {:id "MC032"
-                                               :type :internal
-                                               :hours-per-day 8
-                                               :potential-ccr? true}
-                                 :touch-time 10}]}}}}}
-        red (update-in r [:structs 1 :routes 1] assoc
-                       :best-end-date (java.util.Date.)
-                       :ccr nil
-                       :total-touch-time 10
-                       :total-buffer 20)]
-    (is (= r (remove-best-end-dates red)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; update-best-end-date

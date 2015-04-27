@@ -4,7 +4,13 @@
             [route-ccrs.best-end-dates.protocols :refer :all]))
 
 (def work-centers
-  {"MC032" {:id "MC032" :type :internal :hours-per-day 8 :potential-ccr? true}})
+  {"MC032" {:id "MC032" :type :internal :hours-per-day 8   :potential-ccr? true}
+   "MC008" {:id "MC008" :type :internal :hours-per-day 8   :potential-ccr? true}
+   "MC012" {:id "MC012" :type :internal :hours-per-day 12  :potential-ccr? true}
+   "IN008" {:id "IN008" :type :internal :hours-per-day 8   :potential-ccr? false}
+   "PR7.5" {:id "PR7.5" :type :internal :hours-per-day 7.5 :potential-ccr? false}
+   "EXT24" {:id "EXT24" :type :external :hours-per-day 24  :potential-ccr? false}
+   "EXT08" {:id "EXT08" :type :external :hours-per-day 8   :potential-ccr? false}})
 
 (defrecord DummyResolver [end-dates interval-factor])
 

@@ -113,6 +113,19 @@
     r gen/boolean]
    (is (= (:id p) (:id (get-part @part-store p r))))))
 
+(defspec ^:db raw-parts-have-descriptions *default-db-test-count*
+  (prop/for-all
+    [p (gen/elements (-raw-parts {} {:connection (:db @tu/test-system)}))]
+    (is (not (nil? (:description (get-part @part-store p)))))))
+
+(defspec ^:db full-parts-have-descriptive-fields *default-db-test-count*
+  (prop/for-all
+    [p (gen/elements (-full-parts {:min_depth 0} {:connection (:db @tu/test-system)}))]
+    (let [p (get-part @part-store p false)]
+      (is (not (nil? (:description p))))
+      (is (contains? p :customer-part))
+      (is (contains? p :issue)))))
+
 (defn reduce-children [f i s]
   (loop [r i loc (-> s zip/down zip/rightmost)]
     (if (nil? loc)
