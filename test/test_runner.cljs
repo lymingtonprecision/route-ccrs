@@ -1,5 +1,6 @@
 (ns test-runner
   (:require [cljs.test :as test :refer-macros [run-tests] :refer [report]]
+            [route-ccrs.schema.date-test]
             [route-ccrs.part-zipper-test]))
 
 (enable-console-print!)
@@ -13,4 +14,5 @@
 (defn runner []
   (test/run-tests
     (test/empty-env ::test/default)
+    'route-ccrs.schema.date-test
     'route-ccrs.part-zipper-test))
