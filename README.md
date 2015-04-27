@@ -35,7 +35,7 @@ settings&mdash;we don't want to consume all the database processes.)
 [hikari-cp]: https://github.com/brettwooldridge/HikariCP
 [hikari-clj]: https://github.com/tomekw/hikari-cp
 
-The vast majority of the `fn`s you will wish to use are in under the
+The vast majority of the `fn`s you will wish to use are under the
 `route-ccrs.best-end-dates.*` namespaces. This covers updating and
 extracting the end dates of part records, and their child records.
 
