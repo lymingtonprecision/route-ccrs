@@ -1,9 +1,16 @@
 (ns test-runner
-  (:require [cljs.test :refer-macros [run-tests]]
+  (:require [cljs.test :as test :refer-macros [run-tests] :refer [report]]
             [route-ccrs.part-zipper-test]))
 
-(set! *print-newline* false)
-(set-print-fn! js/print)
+(enable-console-print!)
 
-(run-tests
-  'route-ccrs.part-zipper-test)
+(defmethod report [::test/default :summary] [m]
+  (println "\nRan" (:test m) "tests containing"
+           (+ (:pass m) (:fail m) (:error m)) "assertions.")
+  (println (:fail m) "failures," (:error m) "errors.")
+  (aset js/window "test-failures" (+ (:fail m) (:error m))))
+
+(defn runner []
+  (test/run-tests
+    (test/empty-env ::test/default)
+    'route-ccrs.part-zipper-test))

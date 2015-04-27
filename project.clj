@@ -36,13 +36,18 @@
   :cljsbuild {:builds
               {:test
                {:source-paths ["src" "test"]
+                :notify-command ["phantomjs"
+                                 "phantom/unit-test.js"
+                                 "phantom/unit-test.html"]
                 :compiler
                 {:optimizations :whitespace
                  :pretty-print true
                  :output-dir "target/js/test"
                  :output-to "target/route-ccrs-test.js"
                  :source-map "target/route-ccrs-test.js.map"}}}
-              :test-commands {"cljs" ["jjs" "target/route-ccrs-test.js"]}}
+              :test-commands {"cljs" ["phantomjs"
+                                      "phantom/unit-test.js"
+                                      "phantom/unit-test.html"]}}
 
   :test-selectors {:default (fn [m] (not (some #(get m %) [:db :integration])))
                    :db :db

@@ -174,11 +174,10 @@ will need to be reviewed when that is released.
 
 [cljs-recursive-schema]: https://github.com/Prismatic/schema/commit/c47c2f3395d232cb5af9d2ce7480ae6e8dafa14c
 
-ClojureScript testing is currently very basic. It requires the
-[Nashorn](http://openjdk.java.net/projects/nashorn/) runtime (the `jjs`
-executable) to be available in the path and runs a very basic
-`test_runner.cljs` file that just includes all the tests we've made
-cross runtime (converted to `.cljc` files.)
+ClojureScript testing is currently very basic. It requires
+[PhantomJS](http://phantomjs.org/) to be available in the path and runs
+a very basic `test_runner.cljs` file that just includes all the tests
+we've made cross runtime (converted to `.cljc` files.)
 
 A big part of getting tests to work in both runtimes so far has involved
 moving the generator `fn`s out of the test files and into their own
