@@ -5,9 +5,10 @@
             [clojure.test.check.properties :as prop]
             [com.gfredericks.test.chuck.generators :as gen']
             [com.gfredericks.test.chuck.properties :as prop']
+            [route-ccrs.generators.util :refer :all]
+            [route-ccrs.generators.raw-part :as raw]
             [route-ccrs.schema.test-util :refer :all]
             [route-ccrs.schema.ids.manufacturing-method-test :as mm]
-            [route-ccrs.schema.purchased-raw-part-test :as raw]
             [route-ccrs.schema.routes-test :as route]
             [route-ccrs.schema.parts :refer :all]))
 

@@ -3,11 +3,12 @@
             [clojure.test.check.clojure-test :refer [defspec]]
             [clojure.test.check.generators :as gen]
             [clojure.test.check.properties :as prop]
+            [route-ccrs.generators.util :refer :all]
+            [route-ccrs.generators.raw-part
+             :refer [gen-raw-part gen-invalid-raw-part]]
             [route-ccrs.schema.test-util :refer :all]
             [route-ccrs.schema.structured-part-test
              :refer [gen-structured-part gen-invalid-structured-part]]
-            [route-ccrs.schema.purchased-raw-part-test
-             :refer [gen-raw-part gen-invalid-raw-part]]
             [route-ccrs.schema.parts :refer [Part]]))
 
 (defspec structured-parts-are-parts

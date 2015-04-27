@@ -3,6 +3,7 @@
             [clojure.test.check.clojure-test :refer [defspec]]
             [clojure.test.check.generators :as gen]
             [clojure.test.check.properties :as prop]
+            [route-ccrs.generators.util :refer :all]
             [route-ccrs.schema.test-util :refer :all]
             [route-ccrs.schema.ids :as ids]))
 

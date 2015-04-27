@@ -1,11 +1,15 @@
 (ns route-ccrs.part-zipper-test
-  (:require [clojure.test :refer :all]
-            [clojure.test.check.generators :as gen]
+  (:require #?(:clj  [clojure.test :refer :all]
+               :cljs [cljs.test :refer-macros [use-fixtures deftest is]])
+            #?(:clj [clojure.test.check.generators :as gen]
+               :cljs [cljs.test.check.generators :as gen])
+            #?(:clj  [clj-time.core :as t]
+               :cljs [cljs-time.core :as t])
+            #?(:cljs [cljs-time.extend])
             [schema.test]
-            [clj-time.core :as t]
-            [route-ccrs.schema.purchased-raw-part-test :refer [gen-raw-part]]
+            [route-ccrs.generators.raw-part :refer [gen-raw-part]]
             [clojure.zip :as zip :refer [up down left right node]]
-            [route-ccrs.part-zipper :refer :all]))
+            [route-ccrs.part-zipper :as pz]))
 
 (use-fixtures :once schema.test/validate-schemas)
 
@@ -47,21 +51,21 @@
 
 (deftest root-part-returns-part-at-root-of-zipper
   (let [p simple-test-part
-        z (part-zipper p)]
-    (is (= p (-> z down down down down down root-part)))))
+        z (pz/part-zipper p)]
+    (is (= p (-> z down down down down down pz/root-part)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; format of nodes
 
 (deftest struct-nodes-are-single-element-maps-of-the-struct-entry
   (let [p simple-test-part
-        z (part-zipper p)]
+        z (pz/part-zipper p)]
     (is (= (-> z down node) {1 (-> p :structs (get 1))}))))
 
 (deftest component-nodes-are-single-element-maps-of-the-component-entry
   (let [rp (first (gen/sample (gen-raw-part) 1))
         p (assoc-in simple-test-part [:structs 1 :components 2] rp)
-        z (part-zipper p)]
+        z (pz/part-zipper p)]
     (is (= (set (reduce
                  (fn [r [k v]] (conj r {k v}))
                  []
@@ -70,7 +74,7 @@
 
 (deftest route-nodes-are-single-element-maps-of-the-route-entry
   (let [p simple-test-part
-        z (part-zipper p)]
+        z (pz/part-zipper p)]
     (is (= (set (reduce
                  (fn [r [k v]] (conj r {k v}))
                  []
@@ -81,7 +85,7 @@
 ;; node utility fns
 
 (deftest node-key-of-the-root-is-nil
-  (is (nil? (node-key (part-zipper simple-test-part)))))
+  (is (nil? (pz/node-key (pz/part-zipper simple-test-part)))))
 
 (deftest node-keys
   (let [p {:id "100105468R01"
@@ -101,48 +105,49 @@
                  :routes
                  {'ow {:id {:type :manufactured :revision 1 :alternative "*"}
                        :operations [{:id 10 :work-center MC032 :touch-time 1}]}}}}}
-        z (part-zipper p)]
-    (is (= 1 (-> z down node-key)))
-    (is (= :components (-> z down down node-key)))
-    (is (= :a (-> z down right node-key)))
-    (is (= [:a 1 '*] (-> z down zip/rightmost down down node-key)))
-    (is (= 'ow (-> z down zip/rightmost down right down node-key)))))
+        z (pz/part-zipper p)]
+    (is (= 1 (-> z down pz/node-key)))
+    (is (= :components (-> z down down pz/node-key)))
+    (is (= :a (-> z down right pz/node-key)))
+    (is (= [:a 1 '*] (-> z down zip/rightmost down down pz/node-key)))
+    (is (= 'ow (-> z down zip/rightmost down right down pz/node-key)))))
 
 (deftest node-val-of-the-root-is-the-supplied-part
-  (is (= simple-test-part (node-val (part-zipper simple-test-part)))))
+  (is (= simple-test-part (pz/node-val (pz/part-zipper simple-test-part)))))
 
 (deftest node-vals
   (let [p simple-test-part
-        z (part-zipper p)]
-    (is (= (get-in p [:structs 1]) (-> z down node-val)))
+        z (pz/part-zipper p)]
+    (is (= (get-in p [:structs 1]) (-> z down pz/node-val)))
     (is (= (get-in p [:structs 1 :components 1])
-           (-> z down down down node-val)))
+           (-> z down down down pz/node-val)))
     (is (= (get-in p [:structs 1 :components 1 :structs 1 :routes 1])
-           (-> z down down down down down right down node-val)))
+           (-> z down down down down down right down pz/node-val)))
     (is (= (get-in p [:structs 1 :components 1 :structs 1 :components 2])
-           (-> z down down down down down down right node-val)))))
+           (-> z down down down down down down right pz/node-val)))))
 
 (deftest edit-vals
   (let [p simple-test-part
-        f {:best-end-date (java.util.Date.)
+        f {:best-end-date (t/today)
            :ccr nil
            :total-touch-time 10
            :total-buffer 5}
-        z (part-zipper p)]
+        z (pz/part-zipper p)]
     (is (= (assoc p :best-end-date (:best-end-date f))
-           (-> z (edit-val assoc :best-end-date (:best-end-date f)) root-part)))
+           (-> z (pz/edit-val assoc :best-end-date (:best-end-date f))
+               pz/root-part)))
     (is (= (update-in p [:structs 1 :components 1 :structs 1 :routes 1]
                       merge f)
            (-> z down down down down down right down
-               (edit-val merge f)
-               root-part)))))
+               (pz/edit-val merge f)
+               pz/root-part)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; zip/children and zip/branch?
 
 (deftest top-level-traversal
   (let [p simple-test-part
-        z (part-zipper p)]
+        z (pz/part-zipper p)]
     (is (nil? (zip/left z)))
     (is (nil? (zip/right z)))
     (is (= #{:components :routes}
@@ -166,7 +171,7 @@
                :routes
                {1 {:id {:type :manufactured :revision 1 :alternative "*"}
                    :operations [{:id 10 :work-center MC032 :touch-time 1}]}}}}}
-        z (part-zipper p)
+        z (pz/part-zipper p)
         zs (zip/children z)]
     (is (= (count zs) (count (set zs))))
     (is (= (set zs)
@@ -174,7 +179,7 @@
 
 (deftest struct-traversal
   (let [p simple-test-part
-        z (part-zipper p)]
+        z (pz/part-zipper p)]
     (is (= (-> z down node) {1 (get-in p [:structs 1])}))
     (is (= (-> z down down down node) {1 (get-in p [:structs 1 :components 1])}))
     (is (= (-> z down down down down down right down node)
@@ -185,13 +190,13 @@
 
 (deftest structs-without-components-still-branch-to-that-level
   (let [childless-part (assoc-in simple-test-part [:structs 1 :components] {})
-        z (part-zipper childless-part)]
+        z (pz/part-zipper childless-part)]
     (is (zip/branch? (-> z down down)))))
 
 (deftest routes-have-no-children
   (let [p (get-in simple-test-part [:structs 1 :components 1])
         r {1 (get-in p [:structs 1 :routes 1])}
-        z (part-zipper p)
+        z (pz/part-zipper p)
         rn (-> z down down right down)]
     (is (= (node rn) r))
     (is (not (zip/branch? rn)))))
@@ -200,9 +205,9 @@
 ;; zip/edit
 
 (deftest editing-structure-and-component-end-dates
-  (let [d (java.util.Date.)
+  (let [d (t/today)
         p simple-test-part
-        z (part-zipper p)
+        z (pz/part-zipper p)
         update-best-end-date (fn [n d]
                                (assoc-in n
                                          (conj (vec (keys n)) :best-end-date)
@@ -212,23 +217,23 @@
                up
                up
                (zip/edit update-best-end-date d)
-               root-part)]
+               pz/root-part)]
     (is (= ep
            (-> p
                (assoc-in [:structs 1 :components 1 :best-end-date] d)
                (assoc-in [:structs 1 :best-end-date] d))))))
 
 (deftest editing-a-routing
-  (let [d (java.util.Date.)
+  (let [d (t/today)
         p simple-test-part
         e {:best-end-date d
            :ccr MC032
            :total-touch-time 10
            :total-buffer 5}
-        z (part-zipper p)
+        z (pz/part-zipper p)
         ep (-> z down down down down down right down
                (zip/edit (fn [n m] (update-in n (keys n) merge m)) e)
-               root-part)]
+               pz/root-part)]
     (is (= ep
            (update-in p [:structs 1 :components 1 :structs 1 :routes 1]
                       merge e)))))
@@ -249,9 +254,9 @@
         i (repeatedly (count paths) #(rand-int (* 365 2)))
         e (set-end-dates p (map #(t/plus d (t/days %)) i))]
     (is (= e
-           (loop [z (part-zipper p) incs i]
+           (loop [z (pz/part-zipper p) incs i]
              (if (zip/end? z)
-               (root-part z)
+               (pz/root-part z)
                (let [[n incs] (if (:best-end-date (-> z zip/node vals first))
                                 [(zip/edit z
                                            (fn [n i]
@@ -267,7 +272,7 @@
 ;; zip/replace
 
 (deftest replacing-a-calculated-route-with-an-uncalculated-route
-  (let [d (java.util.Date.)
+  (let [d (t/today)
         ep simple-test-part
         r (get-in ep [:structs 1 :components 1 :structs 1 :routes 1])
         c {:best-end-date d
@@ -280,11 +285,11 @@
            :total-buffer 5}
         p (update-in ep [:structs 1 :components 1 :structs 1 :routes 1]
                      merge c)
-        z (part-zipper p)]
+        z (pz/part-zipper p)]
     (is (= ep
            (-> z down down down down down right down
                (zip/replace {1 r})
-               root-part)))))
+               pz/root-part)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; zip/remove
@@ -307,17 +312,17 @@
                :routes
                {1 {:id {:type :manufactured :revision 1 :alternative "*"}
                    :operations [{:id 10 :work-center MC032 :touch-time 1}]}}}}}
-        z (part-zipper p)
+        z (pz/part-zipper p)
         k (rand-nth (-> p :structs keys))]
     (is (= (update-in p [:structs] dissoc k)
            (->> z down
                 (#(if (= (keys (zip/node %)) [k]) % (recur (zip/right %))))
                 zip/remove
-                root-part)))))
+                pz/root-part)))))
 
 (deftest removing-a-component
   (let [p simple-test-part
-        z (part-zipper p)
+        z (pz/part-zipper p)
         k 2]
     (is (= (update-in p [:structs 1 :components 1 :structs 1 :components]
                       dissoc
@@ -325,7 +330,7 @@
            (->> z down down down down down down
                 (#(if (= (keys (zip/node %)) [k]) % (zip/right %)))
                 zip/remove
-                root-part)))))
+                pz/root-part)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; zip/append-child
@@ -335,17 +340,17 @@
         k 2
         v {:id {:type :purchased :revision 1 :alternative "2"}
            :lead-time 10 :best-end-date nil :components {}}
-        z (part-zipper p)]
+        z (pz/part-zipper p)]
     (is (= (update-in p [:structs] assoc k v)
-           (-> z (zip/append-child {k v}) root-part)))))
+           (-> z (zip/append-child {k v}) pz/root-part)))))
 
 (deftest appending-a-component
   (let [c (first (gen/sample (gen-raw-part)))
         p simple-test-part
-        z (part-zipper p)
+        z (pz/part-zipper p)
         ep (-> z down down
                (zip/append-child {2 c})
-               root-part)]
+               pz/root-part)]
     (is (= (assoc-in p [:structs 1 :components 2] c) ep))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -356,17 +361,17 @@
         k 2
         v {:id {:type :purchased :revision 1 :alternative "2"}
            :lead-time 10 :best-end-date nil :components {}}
-        z (part-zipper p)]
+        z (pz/part-zipper p)]
     (is (= (update-in p [:structs] assoc k v)
-           (-> z (zip/insert-child {k v}) root-part)))))
+           (-> z (zip/insert-child {k v}) pz/root-part)))))
 
 (deftest inserting-a-child-component
   (let [c (first (gen/sample (gen-raw-part)))
         p simple-test-part
-        z (part-zipper p)
+        z (pz/part-zipper p)
         ep (-> z down down
                (zip/insert-child {2 c})
-               root-part)]
+               pz/root-part)]
     (is (= (assoc-in p [:structs 1 :components 2] c) ep))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -377,17 +382,17 @@
         k 2
         v {:id {:type :purchased :revision 1 :alternative "2"}
            :lead-time 10 :best-end-date nil :components {}}
-        z (part-zipper p)]
+        z (pz/part-zipper p)]
     (is (= (update-in p [:structs] assoc k v)
-           (-> z down (zip/insert-left {k v}) root-part)))))
+           (-> z down (zip/insert-left {k v}) pz/root-part)))))
 
 (deftest inserting-a-sibling-component
   (let [c (first (gen/sample (gen-raw-part)))
         p simple-test-part
-        z (part-zipper p)
+        z (pz/part-zipper p)
         ep (-> z down down down
                (zip/insert-left {2 c})
-               root-part)]
+               pz/root-part)]
     (is (= (assoc-in p [:structs 1 :components 2] c) ep))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -395,29 +400,29 @@
 
 (deftest path-to-the-root-part-is-the-part-number
   (let [p simple-test-part
-        z (part-zipper p)]
-    (is (= [(:id p)] (vec (path-from-loc-to-part z))))))
+        z (pz/part-zipper p)]
+    (is (= [(:id p)] (vec (pz/path-from-loc-to-part z))))))
 
 (deftest path-to-component-part-is-component-part-number
   (let [p simple-test-part
-        z (part-zipper p)
+        z (pz/part-zipper p)
         l (-> z down down down)]
     (is (= [(get-in p [:structs 1 :components 1 :id])]
-           (vec (path-from-loc-to-part l))))))
+           (vec (pz/path-from-loc-to-part l))))))
 
 (deftest path-from-struct-is-struct-id-part-no
   (let [p simple-test-part
-        z (part-zipper p)
+        z (pz/part-zipper p)
         l (-> z down down down down)]
     (is (= [(get-in p [:structs 1 :components 1 :structs 1 :id])
             (get-in p [:structs 1 :components 1 :id])]
-           (vec (path-from-loc-to-part l))))))
+           (vec (pz/path-from-loc-to-part l))))))
 
 (deftest path-from-route-is-route-id-struct-id-part-no
   (let [p simple-test-part
-        z (part-zipper p)
+        z (pz/part-zipper p)
         l (-> z down down down down down right down)]
     (is (= [(get-in p [:structs 1 :components 1 :structs 1 :routes 1 :id])
             (get-in p [:structs 1 :components 1 :structs 1 :id])
             (get-in p [:structs 1 :components 1 :id])]
-           (vec (path-from-loc-to-part l))))))
+           (vec (pz/path-from-loc-to-part l))))))

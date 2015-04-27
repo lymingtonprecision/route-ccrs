@@ -6,6 +6,7 @@
             [com.gfredericks.test.chuck.properties :as prop']
             [clojure.test.check.properties :as prop]
             [schema.core :refer [check]]
+            [route-ccrs.generators.util :refer :all]
             [route-ccrs.schema.test-util :refer :all]
             [route-ccrs.schema.ids.manufacturing-method-test :as ids]
             [route-ccrs.schema.routes.work-center-test :as wc]

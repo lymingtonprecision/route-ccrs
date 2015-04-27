@@ -5,7 +5,7 @@
             [schema.core :as s]
             [schema.test]
             [clj-time.core :as t]
-            [route-ccrs.schema.purchased-raw-part-test :refer [gen-raw-part]]
+            [route-ccrs.generators.raw-part :refer [gen-raw-part]]
             [route-ccrs.best-end-dates :refer :all]))
 
 (use-fixtures :once schema.test/validate-schemas)

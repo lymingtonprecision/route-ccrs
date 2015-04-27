@@ -4,9 +4,10 @@
             [clojure.test.check.generators :as gen]
             [clojure.test.check.properties :as prop]
             [com.gfredericks.test.chuck.generators :as gen']
+            [route-ccrs.generators.util :refer :all]
+            [route-ccrs.generators.part-no :as pn]
+            [route-ccrs.generators.part-sourcing :refer [gen-source]]
             [route-ccrs.schema.test-util :refer :all]
-            [route-ccrs.schema.ids.part-no-test :as pn]
-            [route-ccrs.schema.part-sourcing-test :refer [gen-source]]
             [route-ccrs.schema.structures.purchased-test :as ps]
             [route-ccrs.schema.structures.manufacturing-test :as ms]
             [route-ccrs.schema.parts :refer [StructuredPart]]))

@@ -5,7 +5,7 @@
             [schema.core :as s]
             [clj-time.core :as t]
             [clj-time.coerce :as tc]
-            [route-ccrs.schema.purchased-raw-part-test :refer [gen-raw-part]]
+            [route-ccrs.generators.raw-part :refer [gen-raw-part]]
             [route-ccrs.best-end-dates.dummy-resolver :refer :all]
             [route-ccrs.best-end-dates.protocols :refer :all]
             [route-ccrs.best-end-dates.update :refer :all]))

@@ -66,7 +66,7 @@
   "
   (:require [clojure.zip :as zip]
             [schema.core :as s]
-            [route-ccrs.schema.parts :refer [Part]]))
+            #?(:clj [route-ccrs.schema.parts :refer [Part]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Constants
@@ -77,15 +77,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Utility fns
-
-(defmacro recur-if
-  "Recurs with the value of `expr` if truthy, otherwise returns `else`
-  or `nil` if not provided."
-  ([expr]
-   `(recur-if ~expr nil))
-  ([expr else]
-   `(let [temp# ~expr]
-      (if temp# (recur temp#) ~else))))
 
 (defn branch?
   "Returns truthy if `x` contains a truthy value for one of the
@@ -186,7 +177,7 @@
 
 (s/defn part-zipper
   "Returns a zipper for traversing a part structure."
-  [part :- Part]
+  [part #?@(:clj [:- Part])]
   (zip/zipper
    (use-record-or-value branch?)
    (use-record-or-value branch-nodes)

@@ -5,15 +5,8 @@
             [com.gfredericks.test.chuck.generators :as gen']
             [clojure.test.check.properties :as prop]
             [schema.core :as schema :refer [check]]
-            [route-ccrs.schema.ids :refer [PartNo]]))
-
-(def gen-part-no (gen'/string-from-regex #"1001\d{5}R\d{2,}"))
-
-(def gen-invalid-part-no
-  (gen/one-of
-    [(gen'/string-from-regex #"100([02-9]\d{5}|\d{6,})R(|.+)")
-     gen/string
-     gen/simple-type]))
+            [route-ccrs.schema.ids :refer [PartNo]]
+            [route-ccrs.generators.part-no :refer :all]))
 
 (defspec valid-part-numbers
   (prop/for-all [pn gen-part-no] (is (nil? (check PartNo pn)))))
