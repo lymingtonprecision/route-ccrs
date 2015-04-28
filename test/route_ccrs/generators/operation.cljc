@@ -1,19 +1,13 @@
-(ns route-ccrs.schema.routes.operation-test
-  (:require [clojure.test :refer :all]
-            [clojure.test.check.clojure-test :refer [defspec]]
-            [clojure.test.check.generators :as gen]
-            [com.gfredericks.test.chuck.generators :as gen']
-            [clojure.test.check.properties :as prop]
-            [schema.core :refer [check]]
-            [route-ccrs.generators.util :refer :all]
-            [route-ccrs.schema.test-util :refer :all]
-            [route-ccrs.schema.routes.work-center-test :as wc]
-            [route-ccrs.schema.routes :refer [Operation]]))
+(ns route-ccrs.generators.operation
+  (:require #?(:clj  [clojure.test.check.generators :as gen]
+               :cljs [cljs.test.check.generators :as gen])
+            [route-ccrs.generators.util :refer [gen-such-that gen-double]]
+            [route-ccrs.generators.work-center :as wc]))
 
 (def gen-valid-id (gen-such-that pos? gen/pos-int))
 (def gen-invalid-id (gen/one-of
                      [gen/neg-int
-                      gen'/double
+                      gen-double
                       (gen-such-that #(if (number? %) (< % 1) true)
                                      gen/simple-type)]))
 
@@ -40,14 +34,7 @@
     (gen-operation {:touch-time
                     (gen/one-of
                      [(gen-such-that neg? gen/neg-int)
-                      gen'/double
+                      (gen-such-that (complement zero?) gen-double)
                       (gen-such-that (complement number?) gen/simple-type)])})
      ; not a record
     gen/simple-type]))
-
-(defspec valid-operations
-  (prop/for-all [o (gen-operation)] (is-valid-to-schema Operation o)))
-
-(defspec invalid-operations
-  (prop/for-all [o gen-invalid-operation]
-                (not-valid-to-schema Operation o)))

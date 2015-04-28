@@ -5,6 +5,11 @@
             [route-ccrs.schema.ids.manufacturing-method-test]
             [route-ccrs.schema.ids.shop-order-id-test]
             [route-ccrs.schema.ids.purchase-order-id-test]
+            [route-ccrs.schema.routes.work-center-test]
+            [route-ccrs.schema.routes.operation-test]
+            [route-ccrs.schema.routes.ccr-test]
+            [route-ccrs.schema.routes.calculation-results-test]
+            [route-ccrs.schema.routes-test]
             [route-ccrs.part-zipper-test]))
 
 (enable-console-print!)
@@ -23,4 +28,9 @@
     'route-ccrs.schema.ids.manufacturing-method-test
     'route-ccrs.schema.ids.shop-order-id-test
     'route-ccrs.schema.ids.purchase-order-id-test
+    'route-ccrs.schema.routes.work-center-test
+    'route-ccrs.schema.routes.operation-test
+    'route-ccrs.schema.routes.ccr-test
+    'route-ccrs.schema.routes.calculation-results-test
+    'route-ccrs.schema.routes-test
     'route-ccrs.part-zipper-test))

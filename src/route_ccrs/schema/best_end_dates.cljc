@@ -1,7 +1,7 @@
 (ns route-ccrs.schema.best-end-dates
   (:require [schema.core :as s]
             [route-ccrs.schema.ids :as ids]
-            [route-ccrs.schema.dates :refer [Date]]))
+            [route-ccrs.schema.dates :as d]))
 
 (def BestEndDateMap
   "A nested map from part numbers to dates and child structure and route
@@ -46,7 +46,7 @@
   (The `path-from-part-to-loc` fn in the `part-zipper` ns is
   conspicuously useful for producing these types of path vectors.)"
   {ids/PartNo
-   {(s/optional-key :best-end-date) Date
+   {(s/optional-key :best-end-date) d/Date
     ids/ManufacturingMethod
-    {(s/optional-key :best-end-date) Date
-     ids/ManufacturedMethodId {:best-end-date Date}}}})
+    {(s/optional-key :best-end-date) d/Date
+     ids/ManufacturedMethodId {:best-end-date d/Date}}}})

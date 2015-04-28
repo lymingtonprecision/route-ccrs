@@ -20,7 +20,11 @@
      (gen/fmap str (gen-such-that pos? gen/pos-int))]))
 
 (def gen-invalid-release
-  (gen-such-that #(if (number? %) (< % 0) true) gen/simple-type))
+  (gen-such-that #(cond
+                    (number? %) (< % 0)
+                    (string? %) (nil? (re-find #"^(\*|\d+)$" %))
+                    :else true)
+                 gen/simple-type))
 
 (defn gen-shop-order-id
   ([] (gen-shop-order-id {}))

@@ -1,7 +1,7 @@
 (ns route-ccrs.schema.routes
   (:require [schema.core :as s]
-            [route-ccrs.schema.dates :refer [Date]]
-            [route-ccrs.schema.generic :refer :all]
+            [route-ccrs.schema.dates :as d]
+            [route-ccrs.schema.generic :as g]
             [route-ccrs.schema.ids :refer [ManufacturedMethodId]]))
 
 (def WorkCenterId
@@ -27,10 +27,10 @@
 
 (def OperationId
   "An operation ID is a non-zero positive integer."
-  int-gt-zero)
+  g/int-gt-zero)
 
-(def ^:private touch-time int-gte-zero)
-(def ^:private buffer num-gte-zero)
+(def ^:private touch-time g/int-gte-zero)
+(def ^:private buffer g/num-gte-zero)
 
 (def Operation
   "An operation has *only* the following fields:
@@ -73,7 +73,7 @@
   * `:total-buffer` zero, or a positive number; the total buffered run
     time of the route in working days"
   {:ccr (s/maybe CCR)
-   :best-end-date Date
+   :best-end-date d/Date
    :total-touch-time touch-time
    :total-buffer buffer})
 
@@ -120,7 +120,7 @@
 (def RouteList
   "A route list is a map where the keys are any non-nil value and the
   values are valid `Route` records."
-  {any-non-nil Route})
+  {g/any-non-nil Route})
 
 (def valid-route-in-use?
   "Predicate to verify that a `RoutedItem`s `:route-in-use` corresponds
@@ -137,7 +137,7 @@
   [sm & s]
   (apply
     s/both
-    (merge sm {:routes RouteList :route-in-use any-non-nil})
+    (merge sm {:routes RouteList :route-in-use g/any-non-nil})
     valid-route-in-use?
     s))
 

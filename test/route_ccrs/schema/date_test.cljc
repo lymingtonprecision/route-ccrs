@@ -1,6 +1,6 @@
 (ns route-ccrs.schema.date-test
   (:require #?(:clj  [clojure.test :refer :all]
-               :cljs [cljs.test :refer-macros [use-fixtures deftest is]])
+               :cljs [cljs.test :refer-macros [deftest]])
             #?(:cljs [cljs.test.check :refer [quick-check]])
             #?(:clj  [clojure.test.check.clojure-test :refer [defspec]]
                :cljs [cljs.test.check.cljs-test :refer-macros [defspec]])
@@ -13,28 +13,28 @@
                 :cljs [[cljs-time.core :as t]
                        [cljs-time.coerce :as tc]
                        [cljs-time.extend]])
-            [schema.core :refer [check]]
-            [route-ccrs.schema.dates :refer [Date]]))
+            [route-ccrs.schema.test-util
+             :refer [is-valid-to-schema not-valid-to-schema]]
+            [route-ccrs.schema.dates :as ds]))
 
 (defspec non-date-types-arent-dates
-  (prop/for-all [v gen/simple-type]
-                (is (not (nil? (check Date v))))))
+  (prop/for-all [v gen/simple-type] (not-valid-to-schema ds/Date v)))
 
 #?(:clj
    (deftest java-dates-are-dates
-     (is (nil? (check Date (java.util.Date.)))))
+     (is-valid-to-schema ds/Date (java.util.Date.)))
    :cljs
    (deftest js-dates-are-dates
-     (is (nil? (check Date (js/Date.))))))
+     (is-valid-to-schema ds/Date (js/Date.))))
 
 (deftest joda-datetimes-are-dates
-  (is (nil? (check Date (t/now)))))
+  (is-valid-to-schema ds/Date (t/now)))
 
 (deftest joda-datemidnights-are-dates
-  (is (nil? (check Date (t/today-at-midnight)))))
+  (is-valid-to-schema ds/Date (t/today-at-midnight)))
 
 (deftest joda-localdates-are-dates
-  (is (nil? (check Date (tc/to-local-date (t/today))))))
+  (is-valid-to-schema ds/Date (tc/to-local-date (t/today))))
 
 (deftest joda-localdatetimes-are-dates
-  (is (nil? (check Date (tc/to-local-date-time (t/now))))))
+  (is-valid-to-schema ds/Date (tc/to-local-date-time (t/now))))

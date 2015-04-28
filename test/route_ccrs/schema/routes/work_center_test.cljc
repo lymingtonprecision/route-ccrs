@@ -1,40 +1,23 @@
 (ns route-ccrs.schema.routes.work-center-test
-  (:require [clojure.test :refer :all]
-            [clojure.test.check.clojure-test :refer [defspec]]
-            [clojure.test.check.generators :as gen]
-            [com.gfredericks.test.chuck.generators :as gen']
-            [clojure.test.check.properties :as prop]
-            [route-ccrs.generators.util :refer :all]
-            [route-ccrs.schema.test-util :refer :all]
-            [route-ccrs.schema.routes :refer [WorkCenter]]))
+  (:require #?(:cljs [cljs.test.check :refer [quick-check]])
+            #?(:clj  [clojure.test.check.clojure-test :refer [defspec]]
+               :cljs [cljs.test.check.cljs-test :refer-macros [defspec]])
+            #?(:clj  [clojure.test.check.generators :as gen]
+               :cljs [cljs.test.check.generators :as gen])
+            #?(:clj  [clojure.test.check.properties :as prop]
+               :cljs [cljs.test.check.properties :as prop :include-macros true])
+            [route-ccrs.generators.util
+             :refer [gen-such-that gen-with-extra-fields]]
+            [route-ccrs.schema.test-util
+             :refer [is-valid-to-schema not-valid-to-schema]]
+            [route-ccrs.schema.routes :refer [WorkCenter]]
+            [route-ccrs.generators.work-center :as wc :refer [gen-work-center]]))
 
 (defn is-valid [x]
   (is-valid-to-schema WorkCenter x))
 
 (defn not-valid [x]
   (not-valid-to-schema WorkCenter x))
-
-(def work-center-types
-  #{:internal :external})
-
-(def gen-valid-id
-  (gen-such-that
-    (complement empty?)
-    (gen/resize 5 gen/string-alphanumeric)))
-
-(def gen-invalid-id
-  (gen/one-of
-   [(gen/return "")
-    (gen-such-that #(> (count %) 5) gen/string-alphanumeric)
-    (gen-such-that (complement string?) gen/simple-type)]))
-
-(def gen-work-center
-  (gen/hash-map
-    :id gen-valid-id
-    :description gen/string-ascii
-    :type (gen/elements work-center-types)
-    :hours-per-day (gen-such-that pos? (gen/one-of [gen'/double gen/pos-int]))
-    :potential-ccr? gen/boolean))
 
 (defspec valid-work-centers
   (prop/for-all [wc gen-work-center] (is-valid wc)))
@@ -48,13 +31,13 @@
 (defspec invalid-id
   (prop/for-all
    [wc gen-work-center
-    id gen-invalid-id]
+    id wc/gen-invalid-id]
    (not-valid (assoc wc :id id))))
 
 (defspec invalid-types
   (prop/for-all
    [wc gen-work-center
-    t (gen-such-that #(not (contains? work-center-types %)) gen/keyword)]
+    t (gen-such-that #(not (contains? wc/work-center-types %)) gen/keyword)]
    (not-valid (assoc wc :type t))))
 
 (defspec non-numeric-hours-per-day
@@ -68,7 +51,9 @@
 (defspec non-bool-potential-ccr
   (prop/for-all
    [wc gen-work-center
-    b (gen-such-that #(not= (class %) java.lang.Boolean) gen/simple-type)]
+    b (gen-such-that
+        #(and (not (identical? % true)) (not (identical? % false)))
+        gen/simple-type)]
    (not-valid (assoc wc :potential-ccr? b))))
 
 (def work-center-fields

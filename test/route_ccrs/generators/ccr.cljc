@@ -1,20 +1,15 @@
-(ns route-ccrs.schema.routes.ccr-test
-  (:require [clojure.test :refer :all]
-            [clojure.test.check.clojure-test :refer [defspec]]
-            [clojure.test.check.generators :as gen]
-            [com.gfredericks.test.chuck.generators :as gen']
-            [clojure.test.check.properties :as prop]
-            [schema.core :refer [check]]
-            [route-ccrs.generators.util :refer :all]
-            [route-ccrs.schema.test-util :refer :all]
-            [route-ccrs.schema.routes.work-center-test :as wc]
-            [route-ccrs.schema.routes.operation-test :as op]
-            [route-ccrs.schema.routes :refer [CCR]]))
+(ns route-ccrs.generators.ccr
+  (:require #?(:clj  [clojure.test.check.generators :as gen]
+               :cljs [cljs.test.check.generators :as gen])
+            [route-ccrs.generators.util
+             :refer [gen-such-that gen-with-extra-fields gen-double]]
+            [route-ccrs.generators.work-center :as wc]
+            [route-ccrs.generators.operation :as op]))
 
 (def gen-valid-buffer
   (gen/one-of
     [gen/pos-int
-     (gen-such-that #(>= % 0) gen'/double)]))
+     (gen-such-that #(>= % 0) gen-double)]))
 
 (def gen-invalid-buffer
   (gen/one-of
@@ -23,7 +18,7 @@
 
 (def gen-invalid-touch-time
   (gen/one-of
-    [gen'/double
+    [(gen-such-that (complement zero?) gen-double)
      (gen-such-that neg? gen/neg-int)
      (gen-such-that (complement number?) gen/simple-type)]))
 
@@ -58,9 +53,3 @@
      ; not a record
      gen/simple-type]))
 
-(defspec valid-ccrs
-  (prop/for-all [c (gen-ccr)] (is-valid-to-schema CCR c)))
-
-(defspec invalid-ccrs
-  (prop/for-all [c gen-invalid-ccr]
-                (not-valid-to-schema CCR c)))

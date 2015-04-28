@@ -1,13 +1,9 @@
-(ns route-ccrs.schema.routes.calculation-results-test
-  (:require [clojure.test :refer :all]
-            [clojure.test.check.clojure-test :refer [defspec]]
-            [clojure.test.check.generators :as gen]
-            [com.gfredericks.test.chuck.generators :as gen']
-            [clojure.test.check.properties :as prop]
-            [route-ccrs.generators.util :refer :all]
-            [route-ccrs.schema.test-util :refer :all]
-            [route-ccrs.schema.routes.ccr-test :as ccr]
-            [route-ccrs.schema.routes :refer [RouteCalculationResults]]))
+(ns route-ccrs.generators.routes.calculation-results
+  (:require #?(:clj  [clojure.test.check.generators :as gen]
+               :cljs [cljs.test.check.generators :as gen])
+            [route-ccrs.generators.util
+             :refer [gen-such-that gen-date gen-double]]
+            [route-ccrs.generators.ccr :as ccr]))
 
 (defn gen-calc-results
   ([] (gen-calc-results {}))
@@ -17,7 +13,7 @@
           total-touch-time gen/pos-int
           total-buffer (gen/one-of
                          [gen/pos-int
-                          (gen-such-that #(>= % 0) gen'/double)])}}]
+                          (gen-such-that #(>= % 0) gen-double)])}}]
    (gen/hash-map
      :ccr ccr
      :best-end-date best-end-date
@@ -45,14 +41,6 @@
      (gen-calc-results {:total-touch-time
                         (gen/one-of
                           [gen-neg-int-or-non-number
-                           gen'/double])})
+                           (gen-such-that (complement zero?) gen-double)])})
      ; invalid buffer
      (gen-calc-results {:total-buffer gen-neg-int-or-non-number})]))
-
-(defspec valid-route-calculations
-  (prop/for-all [r (gen-calc-results)]
-                (is-valid-to-schema RouteCalculationResults r)))
-
-(defspec invalid-route-calculations
-  (prop/for-all [r gen-invalid-calc-results]
-                (not-valid-to-schema RouteCalculationResults r)))
