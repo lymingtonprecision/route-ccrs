@@ -36,9 +36,6 @@
   :cljsbuild {:builds
               {:test
                {:source-paths ["src" "test"]
-                :notify-command ["phantomjs"
-                                 "phantom/unit-test.js"
-                                 "phantom/unit-test.html"]
                 :compiler
                 {:optimizations :whitespace
                  :pretty-print true
