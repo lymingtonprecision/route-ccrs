@@ -1,11 +1,8 @@
-(ns route-ccrs.schema.ids.manufacturing-method-test
-  (:require [clojure.test :refer :all]
-            [clojure.test.check.clojure-test :refer [defspec]]
-            [clojure.test.check.generators :as gen]
-            [clojure.test.check.properties :as prop]
-            [route-ccrs.generators.util :refer :all]
-            [route-ccrs.schema.test-util :refer :all]
-            [route-ccrs.schema.ids :as ids]))
+(ns route-ccrs.generators.manufacturing-method
+  (:require #?(:clj  [clojure.test.check.generators :as gen]
+               :cljs [cljs.test.check.generators :as gen])
+            [route-ccrs.generators.util
+             :refer [gen-such-that gen-with-extra-fields]]))
 
 (def ^:private valid-types [:manufactured :purchased :repair])
 
@@ -65,11 +62,3 @@
      gen-mm-with-invalid-type
      gen-mm-with-invalid-alt
      gen-mm-with-invalid-rev]))
-
-(defspec valid-manufacturing-methods
-  (prop/for-all [mm gen-manufacturing-method]
-                (is-valid-to-schema ids/ManufacturingMethod mm)))
-
-(defspec invalid-manufacturing-methods
-  (prop/for-all [mm gen-invalid-manufacturing-method]
-                (not-valid-to-schema ids/ManufacturingMethod mm)))

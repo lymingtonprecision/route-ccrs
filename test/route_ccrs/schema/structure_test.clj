@@ -5,8 +5,8 @@
             [clojure.test.check.properties :as prop]
             [route-ccrs.generators.util :refer :all]
             [route-ccrs.generators.raw-part :as raw]
+            [route-ccrs.generators.manufacturing-method :as mm]
             [route-ccrs.schema.test-util :refer :all]
-            [route-ccrs.schema.ids.manufacturing-method-test :as mm]
             [route-ccrs.schema.structures.purchased-test :as ps]
             [route-ccrs.schema.structures.manufacturing-test :as ms]
             [route-ccrs.schema.parts :refer [Structure

@@ -1,7 +1,7 @@
 (ns route-ccrs.schema.ids
   (:require [clojure.string :as str]
             [schema.core :as s]
-            [route-ccrs.schema.generic :refer :all]))
+            [route-ccrs.schema.generic :as g]))
 
 (def PartNo
   "A part number is a string matching the format `1001_____R__*`, where
@@ -20,8 +20,8 @@
   `:revision` a greater than zero integer
   `:alternative` a string of either: `*` or a positive, non-zero, integer"
   {:type (s/enum :manufactured :purchased :repair)
-   :revision int-gt-zero
-   :alternative asterisk-or-number})
+   :revision g/int-gt-zero
+   :alternative g/asterisk-or-number})
 
 (def ManufacturedMethodId
   "A manufactured method ID is a manufacturing method that is only valid
@@ -45,8 +45,8 @@
   `:release` a string of either: `*` or a positive, non-zero, integer
   `:sequence` as per `:release`"
   {:order-no ShopOrderNo
-   :release asterisk-or-number
-   :sequence asterisk-or-number})
+   :release g/asterisk-or-number
+   :sequence g/asterisk-or-number})
 
 (def PurchaseOrderId
   "A purchase order ID consists of *only* the fields:
@@ -57,5 +57,5 @@
   {:order-no (s/both s/Str
                      (s/pred not-empty 'not-empty)
                      (s/pred #(<= (count %) 12) 'lt-12-characters))
-   :line int-gt-zero
-   :release int-gt-zero})
+   :line g/int-gt-zero
+   :release g/int-gt-zero})

@@ -1,6 +1,10 @@
 (ns test-runner
   (:require [cljs.test :as test :refer-macros [run-tests] :refer [report]]
             [route-ccrs.schema.date-test]
+            [route-ccrs.schema.ids.part-no-test]
+            [route-ccrs.schema.ids.manufacturing-method-test]
+            [route-ccrs.schema.ids.shop-order-id-test]
+            [route-ccrs.schema.ids.purchase-order-id-test]
             [route-ccrs.part-zipper-test]))
 
 (enable-console-print!)
@@ -15,4 +19,8 @@
   (test/run-tests
     (test/empty-env ::test/default)
     'route-ccrs.schema.date-test
+    'route-ccrs.schema.ids.part-no-test
+    'route-ccrs.schema.ids.manufacturing-method-test
+    'route-ccrs.schema.ids.shop-order-id-test
+    'route-ccrs.schema.ids.purchase-order-id-test
     'route-ccrs.part-zipper-test))
