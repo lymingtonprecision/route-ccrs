@@ -56,7 +56,10 @@ Currently the following namespaces are available in both runtimes:
 
 * `route-ccrs.schema.*`
 * `route-ccrs.best-end-dates`
+* `route-ccrs.best-end-dates.maps`
+* `route-ccrs.manufacturing-methods`
 * `route-ccrs.part-zipper`
+* `route-ccrs.start-dates`
 
 (See: [ClojureScript Client Dev](#clojurescript-client-dev) below for
 development details.)
