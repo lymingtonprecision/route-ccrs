@@ -220,6 +220,39 @@
         v (apply f (node-val loc) args)]
     (zip/replace loc {k v})))
 
+(defn path-from-loc-to-root
+  "Returns the path from the zipper location `loc` to the root part to
+  which it belongs.
+
+  The path is the ID of the record at `loc` followed by a sequence of
+  intervening part and structure IDs until arriving at the root part.
+  For example:
+
+      ; from a routing of a first level component
+      [route-id struct-id part-id struct-id part-id]
+
+      ; from a second level component structure
+      [struct-id part-id struct-id part-id struct-id part-id]
+
+      ; from a first level component
+      [part-id struct-id part-id]
+
+      ; ... and from the root itself
+      [part-id]
+  "
+  [loc]
+  (let [path-to-item (if-let [p (zip/path loc)]
+                       (->> (map #(-> % vals first :id) p)
+                            (remove nil?)
+                            reverse)
+                       [])]
+    (conj path-to-item (-> loc zip/node vals first :id))))
+
+(defn path-from-root-to-loc
+  "A convenience for reversing the results of `path-from-loc-to-root`."
+  [loc]
+  (-> loc path-from-loc-to-root reverse vec))
+
 (defn path-from-loc-to-part
   "Returns the path from the zipper location `loc` to the part to which
   it belongs.
@@ -235,12 +268,7 @@
      [struct-id part-id]
   "
   [loc]
-  (let [path-to-item (if-let [p (zip/path loc)]
-                       (->> (map #(-> % vals first :id) p)
-                            (remove nil?)
-                            reverse)
-                       [])
-        full-path (conj path-to-item (-> loc zip/node vals first :id))]
+  (let [full-path (path-from-loc-to-root loc)]
     (vec (take-until string? full-path))))
 
 (defn path-from-part-to-loc
