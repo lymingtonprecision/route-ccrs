@@ -9,17 +9,20 @@
   Please see the sub-namespaces for functions interacting with the end
   dates within records in different ways."
   (:require [schema.core :as s]
+            [route-ccrs.schema.dates :as ds]
             [route-ccrs.schema.parts :as ps]
             [route-ccrs.schema.routes :as rs]
-            [route-ccrs.util :refer [defmethods]]
-            [route-ccrs.util.schema-dispatch :refer [get-schema]]
-            [clojure.zip :as zip]
-            [route-ccrs.part-zipper :as pz :refer [part-zipper]]))
+            [route-ccrs.util.schema-dispatch :refer [matching-schema]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public
 
-(defmulti best-end-date
+(defn throw-invalid-end-date-record [x]
+  (let [msg (str "don't know how to extract an end date from " x)]
+    #?(:clj  (throw (IllegalArgumentException. msg))
+       :cljs (throw (js/Error. msg)))))
+
+(s/defn best-end-date :- (s/maybe ds/DateInst) [x]
   "Returns the best end date of `x`, where `x` is a record matching a
   schema for which a best end date can be explicitly set or implied
   from child records.
@@ -37,15 +40,17 @@
 
   Throws an IllegalArgumentException if `x` does not represent an
   appropriate record."
-  (fn [x] (get-schema best-end-date x)))
-
-(defmethods best-end-date [x]
-  rs/CalculatedRoute (:best-end-date x)
-  rs/UncalculatedRoute nil
-  ps/PurchasedStructure (:best-end-date x)
-  ps/PurchasedRawPart (:best-end-date x)
-  ps/ManufacturedStructure (best-end-date
-                            (get-in x [:routes (:route-in-use x)]))
-  ps/StructuredPart (if-let [d (:best-end-date x)]
-                      d
-                      (best-end-date (get-in x [:structs (:struct-in-use x)]))))
+  (cond
+    (matching-schema x rs/UncalculatedRoute) nil
+    (matching-schema x rs/CalculatedRoute) (:best-end-date x)
+    (matching-schema x ps/PurchasedRawPart) (:best-end-date x)
+    (matching-schema x ps/PurchasedStructure) (:best-end-date x)
+    (matching-schema x ps/ManufacturedStructure)
+    (best-end-date
+      (get-in x [:routes (:route-in-use x)]))
+    (matching-schema x ps/StructuredPart)
+    (if-let [d (:best-end-date x)]
+      d
+      (best-end-date (get-in x [:structs (:struct-in-use x)])))
+    :else
+    (throw-invalid-end-date-record x)))

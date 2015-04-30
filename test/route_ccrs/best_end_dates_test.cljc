@@ -1,12 +1,16 @@
 (ns route-ccrs.best-end-dates-test
-  (:require [clojure.test :refer :all]
-            [clojure.test.check.clojure-test :refer [defspec]]
-            [clojure.test.check.properties :as prop]
-            [schema.core :as s]
+  #?(:cljs (:require-macros [cljs.test :refer [use-fixtures deftest is]]))
+  (:require #?(:clj  [clojure.test :refer [use-fixtures deftest is]]
+               :cljs [cljs.test.check :refer [quick-check]])
+            #?(:clj  [clojure.test.check.clojure-test :refer [defspec]]
+               :cljs [cljs.test.check.cljs-test :refer-macros [defspec]])
+            #?(:clj  [clojure.test.check.properties :as prop]
+               :cljs [cljs.test.check.properties :as prop :include-macros true])
+            #?(:clj  [clj-time.core :as t]
+               :cljs [cljs-time.core :as t])
             [schema.test]
-            [clj-time.core :as t]
             [route-ccrs.generators.raw-part :refer [gen-raw-part]]
-            [route-ccrs.best-end-dates :refer :all]))
+            [route-ccrs.best-end-dates :refer [best-end-date]]))
 
 (use-fixtures :once schema.test/validate-schemas)
 
@@ -64,7 +68,7 @@
            :route-in-use 812
            :routes
            {1 {:id {:type :manufactured :revision 1 :alternative "*"}
-               :best-end-date (java.util.Date.)
+               :best-end-date (t/today)
                :ccr nil
                :total-touch-time 10
                :total-buffer 5

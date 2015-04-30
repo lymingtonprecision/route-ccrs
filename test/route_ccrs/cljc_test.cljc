@@ -23,6 +23,7 @@
             [route-ccrs.schema.structured-part-test]
             [route-ccrs.schema.structure-test]
             [route-ccrs.schema.part-test]
+            [route-ccrs.best-end-dates-test]
             [route-ccrs.part-zipper-test]))
 
 #?(:cljs (enable-console-print!))
@@ -59,6 +60,7 @@
     'route-ccrs.schema.structure-test
     'route-ccrs.schema.part-test
     ; fn tests
+    'route-ccrs.best-end-dates-test
     'route-ccrs.part-zipper-test))
 
 #?(:clj (defn test-ns-hook [] (test-runner)))
