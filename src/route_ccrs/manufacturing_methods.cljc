@@ -3,6 +3,13 @@
             [route-ccrs.schema.ids :as ids]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Utility fns
+
+(defn str->int [s]
+  #?(:clj  (java.lang.Integer/parseInt s)
+     :cljs (js/parseInt s)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public
 
 (s/defn short-mm :- (s/maybe s/Str)
@@ -33,8 +40,8 @@
         x-default? (= "*" (:alternative x))
         y-default? (= "*" (:alternative y))
         alt-compare (if (and (not x-default?) (not y-default?))
-                      (compare (java.lang.Integer/parseInt (:alternative x))
-                               (java.lang.Integer/parseInt (:alternative y))))]
+                      (compare (str->int (:alternative x))
+                               (str->int (:alternative y))))]
     (cond
       (> rev-compare 0) true
       (< rev-compare 0) false

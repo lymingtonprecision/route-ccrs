@@ -1,11 +1,17 @@
 (ns route-ccrs.manufacturing-methods-test
-  (:require [clojure.test :refer :all]
-            [clojure.test.check.clojure-test :refer [defspec]]
-            [clojure.test.check.generators :as gen]
-            [clojure.test.check.properties :as prop]
+  #?(:cljs (:require-macros [cljs.test :refer [use-fixtures deftest is]]
+                            [cljs.test.check.cljs-test :refer [defspec]]))
+  (:require #?(:clj  [clojure.test :refer [use-fixtures deftest is]]
+               :cljs [cljs.test.check :refer [quick-check]])
+            #?(:clj  [clojure.test.check.clojure-test :refer [defspec]])
+            #?(:clj  [clojure.test.check.generators :as gen]
+               :cljs [cljs.test.check.generators :as gen])
+            #?(:clj  [clojure.test.check.properties :as prop]
+               :cljs [cljs.test.check.properties :as prop :include-macros true])
             [schema.core :as s]
             [schema.test]
-            [route-ccrs.manufacturing-methods :refer :all]))
+            [route-ccrs.manufacturing-methods
+             :refer [short-mm mm-gt? preferred-mm]]))
 
 (use-fixtures :once schema.test/validate-schemas)
 
