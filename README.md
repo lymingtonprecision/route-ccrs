@@ -54,6 +54,7 @@ make sure you're using a version of ClojureScript that supports them.
 
 Currently the following namespaces are available in both runtimes:
 
+* `route-ccrs.schema.*`
 * `route-ccrs.best-end-dates`
 * `route-ccrs.part-zipper`
 
