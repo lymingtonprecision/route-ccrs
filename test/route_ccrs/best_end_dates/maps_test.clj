@@ -5,7 +5,7 @@
             [schema.test]
             [clj-time.core :as t]
             [route-ccrs.generators.raw-part :refer [gen-raw-part]]
-            [route-ccrs.best-end-dates.update :refer [remove-best-end-dates]]
+            [route-ccrs.best-end-dates :refer [remove-best-end-dates]]
             [route-ccrs.best-end-dates.maps :refer :all]))
 
 (def ^:dynamic *max-multilevel-depth* 5)

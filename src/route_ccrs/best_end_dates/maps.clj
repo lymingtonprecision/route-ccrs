@@ -34,7 +34,7 @@
 
             [clojure.zip :as zip]
             [route-ccrs.part-zipper :as pz :refer [part-zipper]]
-            [route-ccrs.best-end-dates.update :refer [remove-best-end-date]]))
+            [route-ccrs.best-end-dates :refer [remove-best-end-date]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; End date manipulation

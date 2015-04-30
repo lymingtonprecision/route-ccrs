@@ -1,10 +1,15 @@
 (ns route-ccrs.best-end-dates
   "Provides the most basic level of interaction with best end dates:
-  reading them from records.
+  reading and removing them from records.
 
-  Exposes a single function `best-end-date` that, given a part,
-  structure, or routing will return the current best end date of that
-  record.
+  Exposes two functions:
+
+  * `best-end-date` which, given a part, structure, or routing will
+    return the current best end date of that record.
+
+  * `remove-best-end-dates` which, given a part, returns a copy with
+    all of the best end dates, at every level, removed. Useful for
+    starting from a blank slate.
 
   Please see the sub-namespaces for functions interacting with the end
   dates within records in different ways."
@@ -12,7 +17,9 @@
             [route-ccrs.schema.dates :as ds]
             [route-ccrs.schema.parts :as ps]
             [route-ccrs.schema.routes :as rs]
-            [route-ccrs.util.schema-dispatch :refer [matching-schema]]))
+            [route-ccrs.util.schema-dispatch :refer [matching-schema]]
+            [clojure.zip :as zip]
+            [route-ccrs.part-zipper :as pz :refer [part-zipper]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Cross platform helpers
@@ -21,6 +28,17 @@
   (let [msg (str "don't know how to extract an end date from " x)]
     #?(:clj  (throw (IllegalArgumentException. msg))
        :cljs (throw (js/Error. msg)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Private node update methods
+
+(defn remove-best-end-date
+  "Given a part-zipper location returns the same location modified so
+  that its value doesn't contain a best end date."
+  [n]
+  (if (nil? (s/check rs/CalculatedRoute (pz/node-val n)))
+    (pz/edit-val n #(apply dissoc % (keys rs/RouteCalculationResults)))
+    (pz/edit-val n assoc :best-end-date nil)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public
@@ -57,3 +75,15 @@
       (best-end-date (get-in x [:structs (:struct-in-use x)])))
     :else
     (throw-invalid-end-date-record x)))
+
+(s/defn remove-best-end-dates :- ps/Part
+  "Returns a copy of `part` with all current `best-end-dates` values
+  removed (or set to `nil`, as appropriate.)"
+  [part :- ps/Part]
+  (loop [loc (part-zipper part)]
+    (if (zip/end? loc)
+      (pz/root-part loc)
+      (let [n (if (:best-end-date (pz/node-val loc))
+                (remove-best-end-date loc)
+                loc)]
+        (recur (zip/next n))))))
