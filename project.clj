@@ -8,7 +8,7 @@
                  [com.stuartsierra/component "0.2.3"]
                  [clj-time "0.9.0"]
                  [com.andrewmcveigh/cljs-time "0.3.4"]
-                 [prismatic/schema "0.4.1"]
+                 [prismatic/schema "0.4.2"]
                  ; explicit instaparse for 1.7.x compatability
                  [instaparse "1.3.6"]
                  [yesql "0.5.0-rc2" :exclusions [instaparse]]

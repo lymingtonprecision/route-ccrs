@@ -1,7 +1,7 @@
 (ns route-ccrs.routes.calculation
   (:require [schema.core :as s]
             [clj-time.core :as t]
-            [route-ccrs.schema.dates :refer [Date]]
+            [route-ccrs.schema.dates :refer [DateInst]]
             [route-ccrs.schema.routes :as rs]
             [route-ccrs.best-end-dates.protocols :refer :all]))
 
@@ -70,7 +70,7 @@
   `edc` **must** implement the `ManufacturingEndDateCalculator`
   protocol."
   ([ccrs :- [rs/CCR], edc] (calculate-ccr-results ccrs edc (t/today)))
-  ([ccrs :- [rs/CCR], edc, sd :- Date]
+  ([ccrs :- [rs/CCR], edc, sd :- DateInst]
    {:pre [(satisfies? ManufacturingEndDateCalculator edc)]}
    (map
      (fn [ccr]
@@ -92,7 +92,7 @@
 
   `edc` **must** implement the `IntervalEndDateCalculator` protocol."
   ([r :- rs/Route, edc] (calculate-route-results r edc (t/today)))
-  ([r :- rs/Route, edc, sd :- Date]
+  ([r :- rs/Route, edc, sd :- DateInst]
    {:pre [(satisfies? IntervalEndDateCalculator edc)]}
    (let [t (calculate-route-totals r)
          ed (interval-end-date edc (:total-buffer t) sd)]
@@ -106,7 +106,7 @@
 
   `edc` **must** implement the `IntervalEndDateCalculator` and
   `ManufacturingEndDateCalculator` protocols."
-  [r :- rs/Route, edc, sd :- Date]
+  [r :- rs/Route, edc, sd :- DateInst]
   {:pre [(satisfies? IntervalEndDateCalculator edc)
          (satisfies? ManufacturingEndDateCalculator edc)]}
   (let [ccrs (potential-ccrs r)
@@ -127,7 +127,7 @@
 
   `edc` **must** implement the `IntervalEndDateCalculator` and
   `ManufacturingEndDateCalculator` protocols."
-  [r :- rs/CalculatedRoute, edc, sd :- Date]
+  [r :- rs/CalculatedRoute, edc, sd :- DateInst]
   {:pre [(satisfies? IntervalEndDateCalculator edc)
          (satisfies? ManufacturingEndDateCalculator edc)]}
   (let [rcr (if-let [ccr (:ccr r)]
@@ -147,7 +147,7 @@
   `edc` **must** implement the `IntervalEndDateCalculator` and
   `ManufacturingEndDateCalculator` protocols."
   ([r :- rs/Route, edc] (update-route-calculation r edc (t/today)))
-  ([r :- rs/Route, edc, sd :- Date]
+  ([r :- rs/Route, edc, sd :- DateInst]
    {:pre [(satisfies? IntervalEndDateCalculator edc)
           (satisfies? ManufacturingEndDateCalculator edc)]}
    (cond

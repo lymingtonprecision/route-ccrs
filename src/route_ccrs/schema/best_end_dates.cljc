@@ -46,7 +46,7 @@
   (The `path-from-part-to-loc` fn in the `part-zipper` ns is
   conspicuously useful for producing these types of path vectors.)"
   {ids/PartNo
-   {(s/optional-key :best-end-date) d/Date
+   {(s/optional-key :best-end-date) d/DateInst
     ids/ManufacturingMethod
-    {(s/optional-key :best-end-date) d/Date
-     ids/ManufacturedMethodId {:best-end-date d/Date}}}})
+    {(s/optional-key :best-end-date) d/DateInst
+     ids/ManufacturedMethodId {:best-end-date d/DateInst}}}})

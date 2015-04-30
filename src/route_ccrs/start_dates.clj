@@ -6,7 +6,7 @@
             [clj-time.coerce :as tc]
             [route-ccrs.util :refer [defmethods sourced?]]
             [route-ccrs.util.schema-dispatch :refer [get-schema]]
-            [route-ccrs.schema.dates :refer [Date]]
+            [route-ccrs.schema.dates :refer [DateInst]]
             [route-ccrs.schema.routes :as rs]
             [route-ccrs.schema.parts :as ps]
             [route-ccrs.best-end-dates :refer [best-end-date]]))
@@ -51,7 +51,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public
 
-(s/defn start-date :- (s/maybe Date)
+(s/defn start-date :- (s/maybe DateInst)
   "Returns the earliest start date of `r`, a part, structure, or route.
   In cases where this cannot be derived from the end date of child
   elements (e.g. for purchased raw parts) then the `default` is used
@@ -73,4 +73,4 @@
 
   `nil` is returned if `r` no matching method can be found for `r`."
   ([r] (start-date r (t/today)))
-  ([r default :- Date] (-start-date r default)))
+  ([r default :- DateInst] (-start-date r default)))

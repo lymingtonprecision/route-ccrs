@@ -13,7 +13,7 @@
           type (gen/return :raw)
           ; `:lead-time` zero, or a positive integer
           lead-time gen/pos-int
-          ; `:best-end-date` `nil`, or a valid `Date`
+          ; `:best-end-date` `nil`, or a valid `DateInst`
           best-end-date (gen/one-of [(gen/return nil) gen-date])
           ; _optionally_ a `Sourced` record, containing a non-nil `:source`
           source (gen/one-of

@@ -28,7 +28,7 @@ page.open(url, function (status) {
     console.log("Running test.");
 
     var failures = page.evaluate(function() {
-        test_runner.runner();
+        route_ccrs.cljc_test.test_runner();
         return window["test-failures"];
     });
 
@@ -38,6 +38,6 @@ page.open(url, function (status) {
     else {
         console.log("*** Tests failed! ***");
     }
-    
+
     phantom.exit(failures ? 100 : 0);
 });

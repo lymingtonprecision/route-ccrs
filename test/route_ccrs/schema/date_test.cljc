@@ -18,23 +18,23 @@
             [route-ccrs.schema.dates :as ds]))
 
 (defspec non-date-types-arent-dates
-  (prop/for-all [v gen/simple-type] (not-valid-to-schema ds/Date v)))
+  (prop/for-all [v gen/simple-type] (not-valid-to-schema ds/DateInst v)))
 
 #?(:clj
    (deftest java-dates-are-dates
-     (is-valid-to-schema ds/Date (java.util.Date.)))
+     (is-valid-to-schema ds/DateInst (java.util.Date.)))
    :cljs
    (deftest js-dates-are-dates
-     (is-valid-to-schema ds/Date (js/Date.))))
+     (is-valid-to-schema ds/DateInst (js/Date.))))
 
 (deftest joda-datetimes-are-dates
-  (is-valid-to-schema ds/Date (t/now)))
+  (is-valid-to-schema ds/DateInst (t/now)))
 
 (deftest joda-datemidnights-are-dates
-  (is-valid-to-schema ds/Date (t/today-at-midnight)))
+  (is-valid-to-schema ds/DateInst (t/today-at-midnight)))
 
 (deftest joda-localdates-are-dates
-  (is-valid-to-schema ds/Date (tc/to-local-date (t/today))))
+  (is-valid-to-schema ds/DateInst (tc/to-local-date (t/today))))
 
 (deftest joda-localdatetimes-are-dates
-  (is-valid-to-schema ds/Date (tc/to-local-date-time (t/now))))
+  (is-valid-to-schema ds/DateInst (tc/to-local-date-time (t/now))))

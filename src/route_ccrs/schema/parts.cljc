@@ -1,9 +1,10 @@
 (ns route-ccrs.schema.parts
+  #?(:cljs (:require-macros [route-ccrs.schema.variant :refer [variant-schema]]))
   (:require [schema.core :as s]
             [route-ccrs.schema.ids :as id]
-            [route-ccrs.schema.dates :refer [Date]]
-            [route-ccrs.schema.generic :refer :all]
-            [route-ccrs.schema.variant :refer [variant-schema]]
+            [route-ccrs.schema.dates :as d]
+            [route-ccrs.schema.generic :as g]
+            #?(:clj [route-ccrs.schema.variant :refer [variant-schema]])
             [route-ccrs.schema.routes :refer [map->Routed]]))
 
 (declare Part)
@@ -25,7 +26,7 @@
   * `[:shop-order shop-order-id]` see `ShopOrderId`
   * `[:purchase-order purchase-order-id]` see `PurchaseOrderId`"
   (variant-schema
-    :fixed-leadtime (s/one int-gt-zero 'leadtime)
+    :fixed-leadtime (s/one g/int-gt-zero 'leadtime)
     :fictitious nil
     :stock nil
     :shop-order (s/one id/ShopOrderId 'shop-order-id)
@@ -43,7 +44,7 @@
 
   (Note: component lists are _maps_ rather than _sequences_ so that
   `diff`ing them is more deterministic than relying on sort order.)"
-  {any-non-nil (s/recursive #'Part)})
+  {g/any-non-nil (s/recursive #'Part)})
 
 (def PurchasedStructure
   "A purchasing structure consists of *only* the following fields:
@@ -51,13 +52,13 @@
   `:id` a valid `PurchasedMethodId`
   `:components` a valid `ComponentList` (cannot be `nil`)
   `:lead-time` zero, or a positive integer
-  `:best-end-date` nil, or a valid `Date`
+  `:best-end-date` nil, or a valid `DateInst`
   `:description` an optional string describing the structure"
   {:id id/PurchasedMethodId
    (s/optional-key :description) (s/maybe s/Str)
    :components ComponentList
-   :lead-time int-gte-zero
-   :best-end-date (s/maybe Date)})
+   :lead-time g/int-gte-zero
+   :best-end-date (s/maybe d/DateInst)})
 
 (def route-types-match-structure?
   "A predicate to ensure that any `:routes` associated with a structure
@@ -112,7 +113,7 @@
 (def StructureList
   "A structure list is a map where the keys are any non-nil value and
   the values are valid `Structure` records."
-  {any-non-nil Structure})
+  {g/any-non-nil Structure})
 
 (def valid-structure-in-use?
   "Predicate to verify that a `StructuredItem`s `:struct-in-use`
@@ -129,7 +130,7 @@
   [sm & s]
   (apply
     s/both
-    (merge sm {:structs StructureList :struct-in-use any-non-nil})
+    (merge sm {:structs StructureList :struct-in-use g/any-non-nil})
     valid-structure-in-use?
     s))
 
@@ -148,7 +149,7 @@
    (s/optional-key :customer-part) (s/maybe s/Str)
    (s/optional-key :issue) (s/maybe s/Str)
    (s/optional-key :description) (s/maybe s/Str)
-   :best-end-date (s/maybe Date)
+   :best-end-date (s/maybe d/DateInst)
    (s/optional-key :source) Source})
 
 (def StructuredPart
@@ -156,7 +157,7 @@
 
   `:id` a valid `PartNo`
   `:type` set to `:structured`
-  `:best-end-date` `nil`, or a valid `Date`
+  `:best-end-date` `nil`, or a valid `DateInst`
 
   It may optionally have the fields:
 
@@ -178,7 +179,7 @@
   `:id` a valid `PartNo`
   `:type` set to `:raw`
   `:lead-time` zero, or a positive integer
-  `:best-end-date` `nil`, or a valid `Date`
+  `:best-end-date` `nil`, or a valid `DateInst`
 
   It may optionally have the fields:
 
@@ -193,7 +194,7 @@
   (merge
     common-part-fields
     {:type (s/eq :raw)
-     :lead-time int-gte-zero}))
+     :lead-time g/int-gte-zero}))
 
 (def Part
   "A part is a record that has the fields:

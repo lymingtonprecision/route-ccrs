@@ -12,7 +12,7 @@
     routings, components) at every level updated."
   (:require [schema.core :as s]
             [clj-time.core :as t]
-            [route-ccrs.schema.dates :refer [Date]]
+            [route-ccrs.schema.dates :refer [DateInst]]
             [route-ccrs.schema.parts :as ps]
             [route-ccrs.schema.routes :as rs]
             [route-ccrs.util :refer [defmethods sourced?]]
@@ -156,7 +156,7 @@
   protocols."
   ([p :- ps/Part, edc]
    (update-all-best-end-dates-under-part p edc (t/today)))
-  ([p :- ps/Part, edc, sd :- Date]
+  ([p :- ps/Part, edc, sd :- DateInst]
    {:pre [(satisfies? EndDateResolver edc)
           (satisfies? IntervalEndDateCalculator edc)
           (satisfies? ManufacturingEndDateCalculator edc)]}

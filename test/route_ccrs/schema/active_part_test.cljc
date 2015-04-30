@@ -1,7 +1,8 @@
 (ns route-ccrs.schema.active-part-test
-  (:require [clojure.test :refer :all]
-            [schema.core :refer [check]]
-            [route-ccrs.schema.test-util :refer :all]
+  (:require #?(:clj [clojure.test :refer :all]
+               :cljs [cljs.test :refer-macros [deftest]])
+            [route-ccrs.schema.test-util
+             :refer [is-valid-to-schema not-valid-to-schema]]
             [route-ccrs.schema.parts :refer [ActivePart]]))
 
 (def part-no "100123456R01")

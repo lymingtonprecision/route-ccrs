@@ -1,20 +1,26 @@
 (ns route-ccrs.schema.structure-test
-  (:require [clojure.test :refer :all]
-            [clojure.test.check.clojure-test :refer [defspec]]
-            [clojure.test.check.generators :as gen]
-            [clojure.test.check.properties :as prop]
-            [route-ccrs.generators.util :refer :all]
+  (:require #?(:clj  [clojure.test :refer :all]
+               :cljs [cljs.test :refer-macros [deftest]])
+            #?(:cljs [cljs.test.check :refer [quick-check]])
+            #?(:clj  [clojure.test.check.clojure-test :refer [defspec]]
+               :cljs [cljs.test.check.cljs-test :refer-macros [defspec]])
+            #?(:clj  [clojure.test.check.generators :as gen]
+               :cljs [cljs.test.check.generators :as gen])
+            #?(:clj  [clojure.test.check.properties :as prop]
+               :cljs [cljs.test.check.properties :as prop :include-macros true])
+            [route-ccrs.generators.util :refer [gen-such-that]]
             [route-ccrs.generators.raw-part :as raw]
             [route-ccrs.generators.manufacturing-method :as mm]
-            [route-ccrs.schema.test-util :refer :all]
-            [route-ccrs.schema.structures.purchased-test :as ps]
-            [route-ccrs.schema.structures.manufacturing-test :as ms]
+            [route-ccrs.generators.structures.purchased :as ps]
+            [route-ccrs.generators.structures.manufactured :as ms]
+            [route-ccrs.schema.test-util
+             :refer [is-valid-to-schema not-valid-to-schema]]
             [route-ccrs.schema.parts :refer [Structure
                                              StructureList
                                              StructuredItem
                                              valid-structure-in-use?]]))
 
-(def gen-valid-structure (gen/one-of [(ps/gen-valid) (ms/gen-valid)]))
+(def gen-valid-structure (gen/one-of [(ps/gen-purch-struct) (ms/gen-valid)]))
 
 (defspec structures-need-components
   (prop/for-all [s (gen/hash-map :id mm/gen-manufacturing-method)]
@@ -56,7 +62,7 @@
 (deftest structure-list-keys-cannot-be-nil
   (not-valid-to-schema
     StructureList
-    {nil (first (gen/sample (ps/gen-valid) 1))}))
+    {nil (first (gen/sample (ps/gen-purch-struct) 1))}))
 
 (defspec a-single-invalid-entry-invalidates-a-list
   (prop/for-all

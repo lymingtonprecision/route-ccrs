@@ -1,14 +1,19 @@
 (ns route-ccrs.schema.part-test
-  (:require [clojure.test :refer :all]
-            [clojure.test.check.clojure-test :refer [defspec]]
-            [clojure.test.check.generators :as gen]
-            [clojure.test.check.properties :as prop]
-            [route-ccrs.generators.util :refer :all]
+  (:require #?(:cljs [cljs.test.check :refer [quick-check]])
+            #?(:clj  [clojure.test.check.clojure-test :refer [defspec]]
+               :cljs [cljs.test.check.cljs-test :refer-macros [defspec]])
+            #?(:clj  [clojure.test.check.generators :as gen]
+               :cljs [cljs.test.check.generators :as gen])
+            #?(:clj  [clojure.test.check.properties :as prop]
+               :cljs [cljs.test.check.properties :as prop :include-macros true])
+            [route-ccrs.generators.util
+             :refer [gen-such-that gen-with-extra-fields]]
             [route-ccrs.generators.raw-part
              :refer [gen-raw-part gen-invalid-raw-part]]
-            [route-ccrs.schema.test-util :refer :all]
-            [route-ccrs.schema.structured-part-test
+            [route-ccrs.generators.structured-part
              :refer [gen-structured-part gen-invalid-structured-part]]
+            [route-ccrs.schema.test-util
+             :refer [is-valid-to-schema not-valid-to-schema]]
             [route-ccrs.schema.parts :refer [Part]]))
 
 (defspec structured-parts-are-parts

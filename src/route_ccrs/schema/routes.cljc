@@ -67,13 +67,13 @@
   of *only* the following fields:
 
   * `:ccr` nil or a valid `CCR` record
-  * `:best-end-date` a valid `Date`
+  * `:best-end-date` a valid `DateInst`
   * `:total-touch-time` zero, or a positive integer; the total run time
     of the route in minutes
   * `:total-buffer` zero, or a positive number; the total buffered run
     time of the route in working days"
   {:ccr (s/maybe CCR)
-   :best-end-date d/Date
+   :best-end-date d/DateInst
    :total-touch-time touch-time
    :total-buffer buffer})
 

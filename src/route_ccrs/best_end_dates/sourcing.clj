@@ -3,7 +3,7 @@
   record."
   (:require [schema.core :as s]
             [clj-time.core :as t]
-            [route-ccrs.schema.dates :refer [Date]]
+            [route-ccrs.schema.dates :refer [DateInst]]
             [route-ccrs.schema.parts :as ps]
             [route-ccrs.util :refer [defmethods]]
             [route-ccrs.best-end-dates.protocols :refer :all]))
@@ -30,7 +30,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public
 
-(s/defn end-date-from-source :- (s/maybe Date)
+(s/defn end-date-from-source :- (s/maybe DateInst)
   "Returns the end date of the defined `:source` in `r`,
   using `edc` to calculate or resolve the end date as required.
 
@@ -43,7 +43,7 @@
   resolved and throws an `IllegalArgumentException` if the defined
   source is invalid."
   ([r :- ps/Sourced edc] (end-date-from-source r edc (t/today)))
-  ([r :- ps/Sourced edc sd :- Date]
+  ([r :- ps/Sourced edc sd :- DateInst]
    {:pre [(satisfies? EndDateResolver edc)
           (satisfies? IntervalEndDateCalculator edc)]}
    (-end-date-from-source r edc sd)))

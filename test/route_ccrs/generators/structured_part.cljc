@@ -1,31 +1,28 @@
-(ns route-ccrs.schema.structured-part-test
-  (:require [clojure.test :refer :all]
-            [clojure.test.check.clojure-test :refer [defspec]]
-            [clojure.test.check.generators :as gen]
-            [clojure.test.check.properties :as prop]
-            [com.gfredericks.test.chuck.generators :as gen']
-            [route-ccrs.generators.util :refer :all]
+(ns route-ccrs.generators.structured-part
+  (:require #?(:clj  [clojure.test.check.generators :as gen]
+               :cljs [cljs.test.check.generators :as gen])
+            [route-ccrs.generators.util :as gu :refer [gen-such-that]]
             [route-ccrs.generators.part-no :as pn]
             [route-ccrs.generators.part-sourcing :refer [gen-source]]
-            [route-ccrs.schema.test-util :refer :all]
-            [route-ccrs.schema.structures.purchased-test :as ps]
-            [route-ccrs.schema.structures.manufacturing-test :as ms]
-            [route-ccrs.schema.parts :refer [StructuredPart]]))
+            [route-ccrs.generators.structures.purchased :as ps]
+            [route-ccrs.generators.structures.manufactured :as ms]))
 
 (def ^:dynamic *sensible-child-list-size* 5)
-(def ^:dynamic *num-multilevel-tests* 10)
+
+(def gen-valid-structs
+  (gen/not-empty
+    (gen/resize
+      *sensible-child-list-size*
+      (gen/map
+        gen/simple-type
+        (gen/one-of [(ps/gen-purch-struct) (ms/gen-valid)])))))
 
 (def gen-valid-struct-attrs
-  (gen'/for
-    [s (gen/not-empty
-         (gen/resize
-           *sensible-child-list-size*
-           (gen/map
-             gen/simple-type
-             (gen/one-of [(ps/gen-valid) (ms/gen-valid)]))))
-     :let [iu (rand-nth (keys s))]]
-    {:structs s
-     :struct-in-use iu}))
+  (gen/fmap
+    (fn [structs]
+      (let [struct-in-use (rand-nth (keys structs))]
+        {:structs structs :struct-in-use struct-in-use}))
+    gen-valid-structs))
 
 (defn gen-structured-part
   ([] (gen-structured-part {}))
@@ -35,8 +32,8 @@
           customer-part gen/string-ascii
           issue gen/string-ascii
           description gen/string-ascii
-          ; `:best-end-date` `nil`, or a valid `Date`
-          best-end-date (gen/one-of [(gen/return nil) gen-date])
+          ; `:best-end-date` `nil`, or a valid `DateInst`
+          best-end-date (gen/one-of [(gen/return nil) gu/gen-date])
           ; it *must* conform to the `StructuredItem` schema
           structs gen-valid-struct-attrs
           ; _optionally_ a `Sourced` record, containing a non-nil `:source`
@@ -71,11 +68,12 @@
      ; missing best end date
      (gen/fmap #(dissoc % :best-end-date) (gen-structured-part))
      ; invalid struct in use
-     (gen'/for [s (gen-structured-part)
-                k (gen-such-that
-                    #(not (contains? (:structs s) %))
-                    gen/simple-type)]
-               (assoc s :struct-in-use k))
+     (gen/fmap
+       (fn [[p k]]
+         (assoc p :struct-in-use k))
+       (gen-such-that
+         (fn [[p k]] (not (contains? (:structs p) k)))
+         (gen/tuple (gen-structured-part gen/simple-type))))
      ; invalid struct
      (gen/fmap
        (fn [[p k v]] (assoc-in p [:structs k] v))
@@ -84,22 +82,9 @@
          gen/simple-type
          gen/simple-type))
      ; extra fields
-     (gen-with-extra-fields
+     (gu/gen-with-extra-fields
        (gen-structured-part)
        {:max *sensible-child-list-size*})]))
-
-(defspec valid-structured-parts
-  (prop/for-all [p (gen-structured-part)] (is-valid-to-schema StructuredPart p)))
-
-(defspec invalid-structured-parts
-  (prop/for-all
-    [p gen-invalid-structured-part]
-    (not-valid-to-schema StructuredPart p)))
-
-(defspec must-have-structs
-  (prop/for-all
-    [p (gen-structured-part {:structs (gen/return {})})]
-    (not-valid-to-schema StructuredPart p)))
 
 (defn gen-multilevel
   "Generates a sequence of structured parts and then recursively adds
@@ -156,15 +141,3 @@
        (gen/tuple
          (gen/not-empty (gen/vector (gen-structured-part)))
           gen-invalid-structured-part)))))
-
-(defspec valid-multilevel
-  *num-multilevel-tests*
-  (prop/for-all
-    [p (gen-multilevel)]
-    (is-valid-to-schema StructuredPart p)))
-
-(defspec invalid-multilevel
-  *num-multilevel-tests*
-  (prop/for-all
-    [p (gen-multilevel false)]
-    (not-valid-to-schema StructuredPart p)))

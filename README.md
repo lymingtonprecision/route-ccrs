@@ -161,30 +161,37 @@ components in this library must have the following access rights:
     grant execute on ifsapp.site_api to routeccr;
     grant execute on ifsapp.work_time_calendar_api to routeccr;
 
+## Running Tests
+
+The test suite is split into three pieces:
+
+* The schema and basic record manipulation/interrogation functions.
+
+      lein test route-ccrs.cljc-test
+
+* Retrieving records from an IFS database.
+
+      lein test :db
+
+* Full end-to-end integration tests.
+
+      lein test :integration
+
+(The basic tests need to be run by specifying a wrapper namespace,
+`route-ccrs.cljc-test`, because they're all now in `.cljc` files so
+that we can run them under ClojureScript too, and `lein test` doesn't
+currently load `.cljc` files directly.)
+
 ## <a name="clojurescript-client-dev">ClojureScript Client Dev</a>
 
 Given that we're using reader conditionals, a beta version of Clojure,
 and all the bleeding edge dependencies that this feature requires this
 can be considered a "use at your own risk" branch.
 
-We can't currently expose the schema across runtimes due to the use of
-a recursive schema for `Part`. `schema 0.4.2` should [include support
-for recursive schemas in ClojureScript][cljs-recursive-schema] so this
-will need to be reviewed when that is released.
-
-[cljs-recursive-schema]: https://github.com/Prismatic/schema/commit/c47c2f3395d232cb5af9d2ce7480ae6e8dafa14c
-
 ClojureScript testing is currently very basic. It requires
 [PhantomJS](http://phantomjs.org/) to be available in the path and runs
-a very basic `test_runner.cljs` file that just includes all the tests
-we've made cross runtime (converted to `.cljc` files.)
-
-A big part of getting tests to work in both runtimes so far has involved
-moving the generator `fn`s out of the test files and into their own
-`generators` namespace under the `test` directory. This is mainly being
-done just because it provides an excuse to keep the code logically
-separated. Only those generators used by the ported namespaces have been
-refactored in this way, so there's still quite a bit to do.
+a very basic test runner that just includes all the tests we've made
+cross runtime (converted to `.cljc` files.)
 
 The `cljsbuild` hooks are currently disabled because it slows things
 down too much and there's no real need to have things compiled and

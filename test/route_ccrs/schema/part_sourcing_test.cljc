@@ -1,13 +1,14 @@
 (ns route-ccrs.schema.part-sourcing-test
-  (:require [clojure.test :refer :all]
-            [clojure.test.check.clojure-test :refer [defspec]]
-            [clojure.test.check.generators :as gen]
-            [clojure.test.check.properties :as prop]
-            [schema.core :refer [check]]
-            [route-ccrs.generators.part-sourcing :refer :all]
-            [route-ccrs.generators.shop-order :as so]
-            [route-ccrs.generators.purchase-order :as po]
-            [route-ccrs.schema.test-util :refer :all]
+  (:require #?(:cljs [cljs.test.check :refer [quick-check]])
+            #?(:clj  [clojure.test.check.clojure-test :refer [defspec]]
+               :cljs [cljs.test.check.cljs-test :refer-macros [defspec]])
+            #?(:clj  [clojure.test.check.generators :as gen]
+               :cljs [cljs.test.check.generators :as gen])
+            #?(:clj  [clojure.test.check.properties :as prop]
+               :cljs [cljs.test.check.properties :as prop :include-macros true])
+            [route-ccrs.generators.part-sourcing :refer [gen-source]]
+            [route-ccrs.schema.test-util
+             :refer [is-valid-to-schema not-valid-to-schema]]
             [route-ccrs.schema.parts :refer [Source Sourced]]))
 
 (defspec valid-sources
@@ -27,6 +28,7 @@
                 (is-valid-to-schema Sourced {:source s})))
 
 (defspec sourced-record-extra-fields
+  10
   (prop/for-all [s (gen-source :valid)
                  m (gen/map gen/simple-type gen/simple-type)]
                 (is-valid-to-schema Sourced (merge m {:source s}))
