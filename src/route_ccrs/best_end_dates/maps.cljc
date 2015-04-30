@@ -27,10 +27,6 @@
   (:require [schema.core :as s]
             [route-ccrs.schema.best-end-dates :refer [BestEndDateMap]]
             [route-ccrs.schema.parts :as ps]
-            [route-ccrs.schema.routes :as rs]
-
-            [route-ccrs.util :refer [defmethods]]
-            [route-ccrs.util.schema-dispatch :refer [get-schema]]
 
             [clojure.zip :as zip]
             [route-ccrs.part-zipper :as pz :refer [part-zipper]]

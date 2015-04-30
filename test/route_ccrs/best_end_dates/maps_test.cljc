@@ -1,12 +1,18 @@
 (ns route-ccrs.best-end-dates.maps-test
-  (:require [clojure.test :refer :all]
-            [clojure.test.check.clojure-test :refer [defspec]]
-            [clojure.test.check.properties :as prop]
+  #?(:cljs (:require-macros [cljs.test :refer [use-fixtures deftest is]]))
+  (:require #?(:clj  [clojure.test :refer [use-fixtures deftest is]]
+               :cljs [cljs.test.check :refer [quick-check]])
+            #?(:clj  [clojure.test.check.clojure-test :refer [defspec]]
+               :cljs [cljs.test.check.cljs-test :refer-macros [defspec]])
+            #?(:clj  [clojure.test.check.properties :as prop]
+               :cljs [cljs.test.check.properties :as prop :include-macros true])
             [schema.test]
-            [clj-time.core :as t]
+            #?(:clj  [clj-time.core :as t]
+               :cljs [cljs-time.core :as t])
             [route-ccrs.generators.raw-part :refer [gen-raw-part]]
             [route-ccrs.best-end-dates :refer [remove-best-end-dates]]
-            [route-ccrs.best-end-dates.maps :refer :all]))
+            [route-ccrs.best-end-dates.maps
+             :refer [part->end-date-map update-best-end-dates-from-map]]))
 
 (def ^:dynamic *max-multilevel-depth* 5)
 

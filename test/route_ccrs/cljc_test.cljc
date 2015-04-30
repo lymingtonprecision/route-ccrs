@@ -24,6 +24,7 @@
             [route-ccrs.schema.structure-test]
             [route-ccrs.schema.part-test]
             [route-ccrs.best-end-dates-test]
+            [route-ccrs.best-end-dates.maps-test]
             [route-ccrs.start-dates-test]
             [route-ccrs.manufacturing-methods-test]
             [route-ccrs.part-zipper-test]))
@@ -63,6 +64,7 @@
     'route-ccrs.schema.part-test
     ; fn tests
     'route-ccrs.best-end-dates-test
+    'route-ccrs.best-end-dates.maps-test
     'route-ccrs.start-dates-test
     'route-ccrs.manufacturing-methods-test
     'route-ccrs.part-zipper-test))
