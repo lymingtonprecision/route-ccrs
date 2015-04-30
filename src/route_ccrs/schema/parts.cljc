@@ -38,6 +38,11 @@
   {:source Source
    s/Any s/Any})
 
+(defn sourced?
+  "Returns truthy if `x` matches the `Sourced` schema."
+  [x]
+  (nil? (s/check Sourced x)))
+
 (def ComponentList
   "A component list is a map where the keys are any non-nil value and
   the values are valid `Part` records.

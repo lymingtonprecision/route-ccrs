@@ -8,18 +8,6 @@
             [route-ccrs.util.schema-dispatch :as sd]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; sourced?
-
-(deftest records-matching-sourced-schema-are-sourced
-  (is (sourced? {:source [:fictitious]})))
-
-(deftest empty-maps-arent-sourced
-  (is (not (sourced? {}))))
-
-(defspec non-map-types-arent-sourced
-  (prop/for-all [x gen/simple-type] (is (not (sourced? x)))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; schema-dispatch/get-schema
 
 (declare mm)

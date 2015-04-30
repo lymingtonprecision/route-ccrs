@@ -1,9 +1,14 @@
 (ns route-ccrs.start-dates-test
-  (:require [clojure.test :refer :all]
+  #?(:cljs (:require-macros [cljs.test :refer [use-fixtures deftest is]]))
+  (:require #?(:clj  [clojure.test :refer [use-fixtures deftest is]]
+               :cljs [cljs.test.check :refer [quick-check]])
             [schema.test]
-            [clj-time.core :as t]
-            [clj-time.coerce :as tc]
-            [route-ccrs.start-dates :refer :all]))
+            #?@(:clj  [[clj-time.core :as t]
+                       [clj-time.coerce :as tc]]
+                :cljs [[cljs-time.core :as t]
+                       [cljs-time.coerce :as tc]
+                       [cljs-time.extend]])
+            [route-ccrs.start-dates :refer [start-date]]))
 
 (use-fixtures :once schema.test/validate-schemas)
 

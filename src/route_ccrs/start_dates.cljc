@@ -2,24 +2,24 @@
   "Provides a single fn for determining the earliest possible start date
   of a part, structure, or routing."
   (:require [schema.core :as s]
-            [clj-time.core :as t]
-            [clj-time.coerce :as tc]
-            [route-ccrs.util :refer [defmethods sourced?]]
-            [route-ccrs.util.schema-dispatch :refer [get-schema]]
+            #?@(:clj  [[clj-time.core :as t]
+                       [clj-time.coerce :as tc]]
+                :cljs [[cljs-time.core :as t]
+                       [cljs-time.coerce :as tc]
+                       [cljs-time.extend]])
+            [route-ccrs.util.schema-dispatch :refer [matching-schema]]
             [route-ccrs.schema.dates :refer [DateInst]]
             [route-ccrs.schema.routes :as rs]
-            [route-ccrs.schema.parts :as ps]
+            [route-ccrs.schema.parts :as ps :refer [sourced?]]
             [route-ccrs.best-end-dates :refer [best-end-date]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Aggregating component end dates
 
 (defn component-end-dates [c]
-  (map #(if-let [d (best-end-date %)]
-          (tc/to-date-time d))
-       (if (map? c)
-         (vals c)
-         c)))
+  (->> (if (map? c) (vals c) c)
+       (map #(if-let [d (best-end-date %)] (tc/to-date-time d)))
+       (filter (complement nil?))))
 
 (defn max-component-end-date
   "Returns the maximum best end date from the components `c`, or `nil`
@@ -29,24 +29,6 @@
     (if (seq ed)
       (t/latest ed)
       nil)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Private multi method definition
-
-(defmulti ^:private -start-date
-  (fn [r default] (get-schema -start-date r)))
-
-(defmethods -start-date [r default]
-  rs/Route default
-  ps/PurchasedRawPart default
-  ps/StructuredPart (if (sourced? r)
-                      default
-                      (-start-date
-                        (get-in r [:structs (:struct-in-use r)])
-                        default))
-  ps/Structure (or (max-component-end-date (:components r)) default))
-
-(defmethod -start-date :default [_ _] nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public
@@ -73,4 +55,14 @@
 
   `nil` is returned if `r` no matching method can be found for `r`."
   ([r] (start-date r (t/today)))
-  ([r default :- DateInst] (-start-date r default)))
+  ([r default :- DateInst]
+   (cond
+     (matching-schema r rs/Route) default
+     (matching-schema r ps/PurchasedRawPart) default
+     (matching-schema r ps/StructuredPart)
+     (if (sourced? r)
+       default
+       (start-date (get-in r [:structs (:struct-in-use r)]) default))
+     (matching-schema r ps/Structure)
+     (or (max-component-end-date (:components r)) default)
+     :else nil)))

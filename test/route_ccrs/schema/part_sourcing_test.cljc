@@ -1,5 +1,7 @@
 (ns route-ccrs.schema.part-sourcing-test
-  (:require #?(:cljs [cljs.test.check :refer [quick-check]])
+  #?(:cljs (:require-macros [cljs.test :refer [deftest is]]))
+  (:require #?(:clj  [clojure.test :refer [deftest is]]
+               :cljs [cljs.test.check :refer [quick-check]])
             #?(:clj  [clojure.test.check.clojure-test :refer [defspec]]
                :cljs [cljs.test.check.cljs-test :refer-macros [defspec]])
             #?(:clj  [clojure.test.check.generators :as gen]
@@ -9,7 +11,7 @@
             [route-ccrs.generators.part-sourcing :refer [gen-source]]
             [route-ccrs.schema.test-util
              :refer [is-valid-to-schema not-valid-to-schema]]
-            [route-ccrs.schema.parts :refer [Source Sourced]]))
+            [route-ccrs.schema.parts :refer [Source Sourced sourced?]]))
 
 (defspec valid-sources
   (prop/for-all [v (gen-source :valid)]
@@ -34,3 +36,15 @@
                 (is-valid-to-schema Sourced (merge m {:source s}))
                 (not-valid-to-schema Sourced m)
                 (not-valid-to-schema Sourced (merge m {:source nil}))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; sourced?
+
+(deftest records-matching-sourced-schema-are-sourced
+  (is (sourced? {:source [:fictitious]})))
+
+(deftest empty-maps-arent-sourced
+  (is (not (sourced? {}))))
+
+(defspec non-map-types-arent-sourced
+  (prop/for-all [x gen/simple-type] (is (not (sourced? x)))))

@@ -1,8 +1,6 @@
 (ns route-ccrs.util
   "General collection of utility functions/macros that don't have a
-  sensible home elsewhere."
-  (:require [schema.core :as s]
-            [route-ccrs.schema.parts :as ps]))
+  sensible home elsewhere.")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public
@@ -24,8 +22,3 @@
   (assert (even? (count dispatch-map)))
   (let [dm (partition 2 dispatch-map)]
     `(do ~@(map (fn [[dv f]] `(defmethod ~mm ~dv ~fn-args ~f)) dm))))
-
-(defn sourced?
-  "Returns truthy if `x` matches the `Sourced` schema."
-  [x]
-  (nil? (s/check ps/Sourced x)))
