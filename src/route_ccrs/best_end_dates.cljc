@@ -15,12 +15,15 @@
             [route-ccrs.util.schema-dispatch :refer [matching-schema]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Public
+;; Cross platform helpers
 
 (defn throw-invalid-end-date-record [x]
   (let [msg (str "don't know how to extract an end date from " x)]
     #?(:clj  (throw (IllegalArgumentException. msg))
        :cljs (throw (js/Error. msg)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Public
 
 (s/defn best-end-date :- (s/maybe ds/DateInst) [x]
   "Returns the best end date of `x`, where `x` is a record matching a
