@@ -47,6 +47,7 @@
   (let [r {:id {:type :manufactured :revision 1 :alternative "*"}
            :best-end-date (rand-date)
            :ccr nil
+           :ccr-queue 0
            :total-touch-time 10
            :total-buffer 5
            :operations [{:id 10
@@ -71,6 +72,7 @@
            {1 {:id {:type :manufactured :revision 1 :alternative "*"}
                :best-end-date (t/today)
                :ccr nil
+               :ccr-queue 0
                :total-touch-time 10
                :total-buffer 5
                :operations [o]}
@@ -79,6 +81,7 @@
             999 {:id {:type :manufactured :revision 2 :alternative "*"}
                  :best-end-date (t/minus d (t/days (rand-int 99)))
                  :ccr nil
+                 :ccr-queue 0
                  :total-touch-time 10
                  :total-buffer 5
                  :operations [o]}}}]
@@ -87,6 +90,7 @@
                                        assoc
                                        :best-end-date d
                                        :ccr nil
+                                       :ccr-queue 0
                                        :total-touch-time 10
                                        :total-buffer 5))))))
 
@@ -114,6 +118,7 @@
                  {1 {:id {:type :manufactured :revision 1 :alternative "*"}
                      :best-end-date d1
                      :ccr nil
+                     :ccr-queue 0
                      :total-touch-time 10
                      :total-buffer 5
                      :operations [o]}
@@ -129,6 +134,7 @@
                                      assoc
                                      :best-end-date d2
                                      :ccr nil
+                                     :ccr-queue 0
                                      :total-touch-time 10
                                      :total-buffer 5))))))
 
@@ -173,6 +179,7 @@
         red (update-in r [:structs 1 :routes 1] assoc
                        :best-end-date (t/today)
                        :ccr nil
+                       :ccr-queue 0
                        :total-touch-time 10
                        :total-buffer 20)]
     (is (= r (remove-best-end-dates red)))))

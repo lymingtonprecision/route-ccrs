@@ -74,15 +74,16 @@
    {:pre [(satisfies? ManufacturingEndDateCalculator edc)]}
    (map
      (fn [ccr]
-       {:ccr ccr
-        :total-touch-time 0
-        :total-buffer 0
-        :best-end-date (work-center-end-date edc
-                                             (:id ccr)
-                                             (:total-touch-time ccr)
-                                             (:pre-ccr-buffer ccr)
-                                             (:post-ccr-buffer ccr)
-                                             sd)})
+       (let [r (work-center-end-date
+                 edc
+                 (:id ccr) (:total-touch-time ccr)
+                 (:pre-ccr-buffer ccr) (:post-ccr-buffer ccr)
+                 sd)]
+         {:ccr ccr
+          :ccr-queue (:queue r)
+          :total-touch-time 0
+          :total-buffer 0
+          :best-end-date (:end-date r)}))
      ccrs)))
 
 (s/defn calculate-route-results :- rs/RouteCalculationResults
@@ -96,7 +97,7 @@
    {:pre [(satisfies? IntervalEndDateCalculator edc)]}
    (let [t (calculate-route-totals r)
          ed (interval-end-date edc (:total-buffer t) sd)]
-     (merge t {:ccr nil :best-end-date ed}))))
+     (merge t {:ccr nil :ccr-queue 0 :best-end-date ed}))))
 
 (s/defn update-route-from-operations :- rs/CalculatedRoute
   "Returns a copy of the route `r` with freshly calculated calculation

@@ -133,6 +133,7 @@
   (let [r route-without-ccrs
         e (assoc route-without-ccrs
                  :ccr nil
+                 :ccr-queue 0
                  :best-end-date (tc/to-date-time
                                   (t/plus (t/today) (t/days 6.875)))
                  :total-touch-time 7800
@@ -144,14 +145,16 @@
                      assoc
                      :work-center (work-centers "MC008")
                      :touch-time (* 64 60))
+        q (work-center-queues "MC008" 0)
         e (assoc r
                  :ccr {:id "MC008"
                        :operation 10
                        :total-touch-time 3840
                        :pre-ccr-buffer 0
                        :post-ccr-buffer 1.875}
+                 :ccr-queue q
                  :best-end-date (tc/to-date-time
-                                  (t/plus (t/today) (t/days 9.875)))
+                                  (t/plus (t/today) (t/days (+ q 9.875))))
                  :total-touch-time 4440
                  :total-buffer 13.875)]
     (is (= e (update-route-calculation r dc)))))
@@ -166,40 +169,45 @@
             {:id 50 :work-center (work-centers "IN008") :touch-time (* 2 60)}
             {:id 60 :work-center (work-centers "MC008") :touch-time (* 3 60)}
             {:id 70 :work-center (work-centers "IN008") :touch-time (* 1 60)}]}
+        q (work-center-queues "MC012" 0)
         e (assoc r
                  :ccr {:id "MC012"
                        :operation 30
                        :total-touch-time 360
                        :pre-ccr-buffer 5.875
                        :post-ccr-buffer 1.125}
+                 :ccr-queue q
                  :best-end-date (tc/to-date-time
-                                  (t/plus (t/today) (t/days 7.5)))
+                                  (t/plus (t/today) (t/days (+ q 7.5))))
                  :total-touch-time 7080
                  :total-buffer 7.75)]
     (is (= e (update-route-calculation r dc)))))
 
 (deftest route-calculation-calculated-route-without-ops-with-ccr
-  (let [r {:id {:type :manufactured :revision 1 :alternative "*"}
+  (let [q (work-center-queues "MC012" 0)
+        r {:id {:type :manufactured :revision 1 :alternative "*"}
            :operations []
            :ccr {:id "MC012"
                  :operation 30
                  :total-touch-time 360
                  :pre-ccr-buffer 5.875
                  :post-ccr-buffer 1.125}
+           :ccr-queue q
            :best-end-date (tc/to-date-time
                             (t/plus (t/minus (t/today) (t/days 20))
-                                    (t/days 7.5)))
+                                    (t/days (+ q 7.5))))
            :total-touch-time 7080
            :total-buffer 7.75}
         e (assoc r
                  :best-end-date (tc/to-date-time
-                                  (t/plus (t/today) (t/days 7.5))))]
+                                  (t/plus (t/today) (t/days (+ q 7.5)))))]
     (is (= e (update-route-calculation r dc)))))
 
 (deftest route-calculation-calculated-route-without-ops-without-ccr
   (let [r {:id {:type :manufactured :revision 1 :alternative "*"}
            :operations []
            :ccr nil
+           :ccr-queue 0
            :best-end-date (tc/to-date-time
                             (t/plus (t/minus (t/today) (t/days 20))
                                     (t/days 32.275)))
@@ -211,19 +219,22 @@
     (is (= e (update-route-calculation r dc)))))
 
 (deftest route-calculation-prefers-calculating-from-ops
-  (let [r (assoc route-without-ccrs
+  (let [q (work-center-queues "MC012")
+        r (assoc route-without-ccrs
                  :ccr {:id "MC012"
                        :operation 30
                        :total-touch-time 360
                        :pre-ccr-buffer 5.875
                        :post-ccr-buffer 1.125}
+                 :ccr-queue q
                  :best-end-date (tc/to-date-time
                                   (t/plus (t/minus (t/today) (t/days 20))
-                                          (t/days 32.275)))
+                                          (t/days (+ q 32.275))))
                  :total-touch-time 13527
                  :total-buffer 32.275)
         e (assoc r
                  :ccr nil
+                 :ccr-queue 0
                  :best-end-date (tc/to-date-time
                                   (t/plus (t/today) (t/days 6.875)))
                  :total-touch-time 7800

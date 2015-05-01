@@ -1,5 +1,25 @@
 select
-  min(
+  nvl(
+    ifsapp.work_time_calendar_api.get_work_days_between(
+      wc.calendar_id,
+      ifsapp.work_time_calendar_api.get_end_date(
+        wc.calendar_id,
+        nvl(:start_date, trunc(sysdate)),
+        :pre_wc_buffer
+      ),
+      fc.start_work_day
+    ),
+    0
+  ) queue,
+  greatest(
+    fc.start_work_day,
+    ifsapp.work_time_calendar_api.get_end_date(
+      wc.calendar_id,
+      nvl(:start_date, trunc(sysdate)),
+      :pre_wc_buffer
+    )
+  ) load_date,
+  (
     ifsapp.work_time_calendar_api.get_end_date(
       wc.calendar_id,
       ifsapp.work_time_calendar_api.get_end_time(
@@ -40,3 +60,5 @@ where fc.contract = 'LPE'
       fc.finish_work_day,
       :total_touch_time
     )
+order by
+  end_date
