@@ -433,3 +433,43 @@
     (is (= ep (vec (pz/path-from-loc-to-part l))))
     (is (= (into ep [(get-in p [:structs 1 :id]) (:id p)])
            (vec (pz/path-from-loc-to-root l))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; zip movement and end? fns exist as a convenience
+
+(deftest zip-movement-fns-exist-as-a-convenience
+  (let [p (get-in simple-test-part [:structs 1 :components 1])
+        z (pz/part-zipper p)]
+    (is (= (zip/down z) (pz/down z)))
+    (is (= (-> z zip/down zip/up) (-> z pz/down pz/up)))
+    (is (= (-> z zip/down zip/down zip/right) (-> z pz/down pz/down pz/right)))
+    (is (= (-> z zip/down zip/down zip/left) (-> z pz/down pz/down pz/left)))
+    (is (= (-> z zip/down zip/down zip/down zip/leftmost)
+           (-> z pz/down pz/down pz/down pz/leftmost)))
+    (is (= (-> z zip/down zip/down zip/down zip/rightmost)
+           (-> z pz/down pz/down pz/down pz/rightmost)))
+    (is (= (-> z zip/down zip/next) (-> z pz/down pz/next)))
+    (is (= (-> z zip/down zip/prev) (-> z pz/down pz/prev)))))
+
+(deftest zip-end-fn-exists-as-a-convenience
+  (let [p (get-in simple-test-part [:structs 1 :components 1])
+        z (pz/part-zipper p)]
+    (is (= (zip/end? z) (pz/end? z)))
+    (is (= (loop [loc z] (if (zip/end? loc) loc (recur (zip/next loc))))
+           (loop [loc z] (if (pz/end? loc) loc (recur (pz/next loc))))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; zip lefts, rights, and children exist as a convenience
+
+(deftest zip-lefts-rights-and-children-fns-exist-as-a-convenience
+  (let [p (get-in simple-test-part [:structs 1 :components 1])
+        z (pz/part-zipper p)]
+    (is (= (zip/lefts z) (pz/lefts z)))
+    (is (= (zip/rights z) (pz/rights z)))
+    (is (= (zip/children z) (pz/children z)))
+    (is (= (-> z zip/down zip/down zip/children)
+           (-> z pz/down pz/down pz/children)))
+    (is (= (-> z zip/down zip/down zip/down zip/rights)
+           (-> z pz/down pz/down pz/down pz/rights)))
+    (is (= (-> z zip/down zip/down zip/down zip/lefts)
+           (-> z pz/down pz/down pz/down pz/lefts)))))

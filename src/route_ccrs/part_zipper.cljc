@@ -55,6 +55,15 @@
   the standard `zip/root` fn. This takes care of that extra wrapping
   whilst also doing everything `zip/root` does.
 
+  Most of the standard zipper fns _except_ the editing fns are also
+  exposed by this namespace so that you don't have to include both it
+  and `clojure.zip`. The included fns are:
+
+  * `up`, `down`, `left`, `right`, `next`, and `prev`
+  * `leftmost` and `rightmost`
+  * `lefts`, `rights`, `branch?`, and `children`
+  * `end?`
+
   Be aware that when _adding_ nodes you **must** supply them as
   `{key value}` maps:
 
@@ -64,6 +73,7 @@
           down ; to the components/routes tuple
           insert-child {2 {...}}) ; insert a new component
   "
+  (:refer-clojure :exclude [next])
   (:require [clojure.zip :as zip]
             [schema.core :as s]
             #?(:clj [route-ccrs.schema.parts :refer [Part]])))
@@ -275,3 +285,19 @@
   "A convenience for reversing the results of `path-from-loc-to-part`."
   [loc]
   (-> loc path-from-loc-to-part reverse vec))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Convenience defs against standard zipper fns
+
+(def up zip/up)
+(def down zip/down)
+(def left zip/left)
+(def right zip/right)
+(def leftmost zip/leftmost)
+(def rightmost zip/rightmost)
+(def next zip/next)
+(def prev zip/prev)
+(def lefts zip/lefts)
+(def rights zip/rights)
+(def children zip/children)
+(def end? zip/end?)

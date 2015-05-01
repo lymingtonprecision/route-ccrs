@@ -18,7 +18,6 @@
             [route-ccrs.schema.parts :as ps]
             [route-ccrs.schema.routes :as rs]
             [route-ccrs.util.schema-dispatch :refer [matching-schema]]
-            [clojure.zip :as zip]
             [route-ccrs.part-zipper :as pz :refer [part-zipper]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -81,9 +80,9 @@
   removed (or set to `nil`, as appropriate.)"
   [part :- ps/Part]
   (loop [loc (part-zipper part)]
-    (if (zip/end? loc)
+    (if (pz/end? loc)
       (pz/root-part loc)
       (let [n (if (:best-end-date (pz/node-val loc))
                 (remove-best-end-date loc)
                 loc)]
-        (recur (zip/next n))))))
+        (recur (pz/next n))))))

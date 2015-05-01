@@ -10,9 +10,7 @@
             [clj-time.core :as t]
             [clj-time.coerce :as tc]
 
-            [clojure.zip :as zip]
             [route-ccrs.part-zipper :as pz]
-
             [route-ccrs.part-store :refer :all]))
 
 (def ^:dynamic *default-db-test-count* 10)
@@ -127,14 +125,14 @@
       (is (contains? p :issue)))))
 
 (defn reduce-children [f i s]
-  (loop [r i loc (-> s zip/down zip/rightmost)]
+  (loop [r i loc (-> s pz/down pz/rightmost)]
     (if (nil? loc)
       r
-      (recur (f r loc) (zip/left loc)))))
+      (recur (f r loc) (pz/left loc)))))
 
 (defn has-child-components? [p]
-  (if (and (zip/node p) (zip/branch? p))
-    (some seq (map #(-> % vals first :components) (zip/children p)))
+  (if (and (pz/node-val p) (pz/branch? p))
+    (some seq (map #(-> % vals first :components) (pz/children p)))
     false))
 
 (defn has-no-second-level-children? [p]
@@ -147,7 +145,7 @@
                  (fn [r component]
                    (or r (has-child-components? component)))
                  false
-                 (zip/down struct))))
+                 (pz/down struct))))
              []
              z)]
     (if (some identity slc)
