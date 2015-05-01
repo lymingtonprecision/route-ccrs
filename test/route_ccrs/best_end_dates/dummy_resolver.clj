@@ -12,6 +12,17 @@
    "EXT24" {:id "EXT24" :type :external :hours-per-day 24  :potential-ccr? false}
    "EXT08" {:id "EXT08" :type :external :hours-per-day 8   :potential-ccr? false}})
 
+(defonce work-center-queues
+  (assoc
+    (reduce
+      (fn [r [wc _]]
+        (assoc r wc (rand-int 100)))
+      {}
+      work-centers)
+    ; set MC008 to have no queue so that it provides a reliable base
+    ; point in any multi-CCR routings
+    "MC008" 0))
+
 (defrecord DummyResolver [end-dates interval-factor])
 
 (extend-type DummyResolver
@@ -35,11 +46,13 @@
      (work-center-end-date this wc time-at-wc pre-wc-days post-wc-days
                            (t/today)))
     ([this wc time-at-wc pre-wc-days post-wc-days start-date]
-     (t/plus (tc/to-date-time start-date)
-             (t/days (+ pre-wc-days
-                        post-wc-days
-                        (/ time-at-wc
-                           60
-                           (:hours-per-day (work-centers wc)))))))))
+     (let [q (get work-center-queues wc 0)
+           d (/ time-at-wc 60 (:hours-per-day (work-centers wc)))
+           sd (tc/to-date-time start-date)
+           ld (t/plus sd (t/days (+ pre-wc-days q)))
+           ed (t/plus sd (t/days (+ pre-wc-days q d post-wc-days)))]
+       {:end-date ed
+        :load-date ld
+        :queue q}))))
 
 (def dummy-resolver (map->DummyResolver {}))

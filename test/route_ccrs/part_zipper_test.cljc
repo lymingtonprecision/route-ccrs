@@ -130,6 +130,7 @@
   (let [p simple-test-part
         f {:best-end-date (t/today)
            :ccr nil
+           :ccr-queue 0
            :total-touch-time 10
            :total-buffer 5}
         z (pz/part-zipper p)]
@@ -228,6 +229,7 @@
         p simple-test-part
         e {:best-end-date d
            :ccr MC032
+           :ccr-queue 0
            :total-touch-time 10
            :total-buffer 5}
         z (pz/part-zipper p)
@@ -281,6 +283,7 @@
                  :total-touch-time 5
                  :pre-ccr-buffer 1
                  :post-ccr-buffer 5}
+           :ccr-queue 0
            :total-touch-time 10
            :total-buffer 5}
         p (update-in ep [:structs 1 :components 1 :structs 1 :routes 1]

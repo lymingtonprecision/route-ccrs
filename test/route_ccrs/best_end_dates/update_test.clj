@@ -71,7 +71,7 @@
                   :routes
                   {1 {:id {:type :manufactured :revision 1 :alternative "*"}
                       :operations [{:id 10
-                                    :work-center {:id "MC032"
+                                    :work-center {:id "MC008"
                                                   :type :internal
                                                   :hours-per-day 8
                                                   :potential-ccr? true}
@@ -104,7 +104,7 @@
                {1 {:id {:type :manufactured :revision 1 :alternative "*"}
                    :operations
                    [{:id 10 :touch-time (* 10 60)
-                     :work-center (work-centers "MC032")}]}}}
+                     :work-center (work-centers "MC008")}]}}}
             2 {:id {:type :purchased :revision 1 :alternative "*"}
                :components {} :lead-time lt :best-end-date nil}}}
         d (rand-days-from-date)
@@ -118,11 +118,12 @@
                :total-touch-time 600
                :total-buffer 1.875
                :best-end-date (tc/to-date-time (t/plus d (t/days 1.875)))
-               :ccr {:id "MC032"
+               :ccr {:id "MC008"
                      :operation 10
                      :total-touch-time 600
                      :pre-ccr-buffer 0
-                     :post-ccr-buffer 0.0}))]
+                     :post-ccr-buffer 0.0}
+               :ccr-queue 0))]
     (is (= e (update-all-best-end-dates-under-part p dummy-resolver d)))))
 
 (deftest update-all-with-simple-structure
@@ -143,7 +144,7 @@
                {1 {:id {:type :manufactured :revision 1 :alternative "*"}
                    :operations
                    [{:id 10 :touch-time (* 10 60)
-                     :work-center (work-centers "MC032")}]}}}}}
+                     :work-center (work-centers "MC008")}]}}}}}
         d (rand-days-from-date)
         e (-> p
               (assoc-in
@@ -158,11 +159,12 @@
                                (t/plus
                                 (t/plus d (t/days lt))
                                 (t/days 1.875)))
-               :ccr {:id "MC032"
+               :ccr {:id "MC008"
                      :operation 10
                      :total-touch-time 600
                      :pre-ccr-buffer 0
-                     :post-ccr-buffer 0.0}))]
+                     :post-ccr-buffer 0.0}
+               :ccr-queue 0))]
     (is (= e (update-all-best-end-dates-under-part p dummy-resolver d)))))
 
 (deftest update-all-with-detailed-structure
@@ -230,18 +232,19 @@
                :route-in-use 1
                :routes
                {1 {:id {:type :manufactured :revision 1 :alternative "*"}
-                   :ccr {:id "MC032"
+                   :ccr {:id "MC008"
                          :operation 10
                          :total-touch-time 600
                          :pre-ccr-buffer 0
                          :post-ccr-buffer 0.0}
+                   :ccr-queue 0
                    :best-end-date (tc/to-date-time
                                    (t/plus sd (t/days (+ 1.25 (* lt 2)))))
                    :total-touch-time 600
                    :total-buffer 1.875
                    :operations
                    [{:id 10 :touch-time (* 10 60)
-                     :work-center (work-centers "MC032")}]}}}}}
+                     :work-center (work-centers "MC008")}]}}}}}
         p (remove-best-end-dates e)]
     (is (not= e p))
     (is (= e (update-all-best-end-dates-under-part p dummy-resolver d)))))

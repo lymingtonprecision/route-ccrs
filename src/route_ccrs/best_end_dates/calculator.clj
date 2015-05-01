@@ -66,7 +66,8 @@
 
 (defquery -db-wc-end-date "route_ccrs/sql/work_center_end_date.sql")
 
-(s/defn ^:always-validate -ifs-work-center-end-date :- (s/maybe DateInst)
+(s/defn ^:always-validate
+  -ifs-work-center-end-date :- (s/maybe WorkCenterLoadResult)
   ([db wc time-at-wc pre-wc-days post-wc-days]
    (-ifs-work-center-end-date db wc time-at-wc pre-wc-days post-wc-days nil))
   ([db
@@ -81,7 +82,11 @@
                      :post_wc_buffer post-wc-days
                      :start_date (if start-date
                                    (tc/to-sql-date start-date))}
-                    (merge results->end-date {:connection db}))))
+                    {:connection db
+                     :result-set-fn first
+                     :row-fn #(sq/to-clj % {:end-date date-serializer
+                                            :load-date date-serializer
+                                            :queue int-serializer})})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public

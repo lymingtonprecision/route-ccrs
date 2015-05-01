@@ -33,6 +33,7 @@
                {1 {:id {:type :manufactured :revision 1 :alternative "*"}
                    :best-end-date (nth d 0)
                    :ccr nil
+                   :ccr-queue 0
                    :total-touch-time 50
                    :total-buffer 5
                    :operations [{:id 10
@@ -65,6 +66,7 @@
                        {1 {:id {:type :manufactured :revision 1 :alternative "*"}
                            :best-end-date (nth d 3)
                            :ccr nil
+                           :ccr-queue 0
                            :total-touch-time 50
                            :total-buffer 5
                            :operations [{:id 10
@@ -143,9 +145,9 @@
   (let [[p _ _] (gen-complex-struct-with-dates)
         p (reduce
            (fn [r p]
-             (update-in r p
-                        dissoc
-                        :best-end-date :ccr :total-touch-time :total-buffer))
+             (update-in
+               r p dissoc
+               :best-end-date :ccr :ccr-queue :total-touch-time :total-buffer))
            p
            [[:structs 1 :routes 1]
             [:structs 1 :components 3 :structs 2 :routes 1]])
