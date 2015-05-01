@@ -14,7 +14,6 @@
             [route-ccrs.schema.routes :as rs]
             [route-ccrs.util :refer [defmethods]]
             [route-ccrs.util.schema-dispatch :refer [get-schema]]
-            [clojure.zip :as zip]
             [route-ccrs.part-zipper :as pz :refer [part-zipper]]
             [route-ccrs.best-end-dates.protocols :refer :all]
             [route-ccrs.best-end-dates.sourcing :refer :all]
@@ -138,20 +137,20 @@
           (satisfies? IntervalEndDateCalculator edc)
           (satisfies? ManufacturingEndDateCalculator edc)]}
    (let [bottom (loop [loc (part-zipper p)]
-                  (let [x (zip/next loc)]
-                    (if (zip/end? x)
+                  (let [x (pz/next loc)]
+                    (if (pz/end? x)
                       loc
                       (recur x))))
-         phantom-node? #(or (nil? (zip/node %))
+         phantom-node? #(or (nil? (pz/node-val %))
                             (contains? #{:routes :components} (pz/node-key %)))
          node-sd #(if (nil? (s/check rs/Route (pz/node-val %)))
-                    (start-date (-> % zip/up zip/up pz/node-val) sd)
+                    (start-date (-> % pz/up pz/up pz/node-val) sd)
                     (start-date (pz/node-val %) sd))]
      (loop [loc bottom]
        (let [loc (if (not (phantom-node? loc))
                    (pz/edit-val loc update-best-end-date edc (node-sd loc))
                    loc)
-             pn (zip/prev loc)]
+             pn (pz/prev loc)]
          (if (nil? pn)
            (pz/root-part loc)
            (recur pn)))))))

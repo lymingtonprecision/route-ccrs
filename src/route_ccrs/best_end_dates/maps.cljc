@@ -28,7 +28,6 @@
             [route-ccrs.schema.best-end-dates :refer [BestEndDateMap]]
             [route-ccrs.schema.parts :as ps]
 
-            [clojure.zip :as zip]
             [route-ccrs.part-zipper :as pz :refer [part-zipper]]
             [route-ccrs.best-end-dates :refer [remove-best-end-date]]))
 
@@ -68,20 +67,20 @@
   `best-end-date`.)"
   [part :- ps/Part]
   (loop [bed {} loc (part-zipper part)]
-    (if (zip/end? loc)
+    (if (pz/end? loc)
       bed
       (let [bed (if-let [ed (:best-end-date (pz/node-val loc))]
                   (assoc-in bed
                             (conj (pz/path-from-part-to-loc loc) :best-end-date)
                             ed)
                   bed)]
-        (recur bed (zip/next loc))))))
+        (recur bed (pz/next loc))))))
 
 (s/defn update-best-end-dates-from-map :- ps/Part
   "Returns a copy of `part` with the best end dates of appropriate child
   entries updated from the `BestEndDateMap` `best-end-dates`."
   [part :- ps/Part, best-end-dates :- BestEndDateMap]
   (loop [loc (part-zipper part)]
-    (if (zip/end? loc)
+    (if (pz/end? loc)
       (pz/root-part loc)
-      (recur (zip/next (update-best-end-date-from-map loc best-end-dates))))))
+      (recur (pz/next (update-best-end-date-from-map loc best-end-dates))))))
