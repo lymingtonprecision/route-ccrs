@@ -35,10 +35,16 @@
     (component/start s)))
 
 (let [sys (system "database-server" "database-instance" "user" "password")
-      pid (rand-nth (ps/active-parts (:part-store sys)))
-      p (ps/get-part (:part-store sys) pid)
-      up (update-all-best-end-dates-under-part p (:date-calculator sys))
+      pid {:id "100100012R03"}
+      [r p] (ps/get-part (:part-store sys) pid)
+      up (if (= :ok r)
+           (update-all-best-end-dates-under-part p (:date-calculator sys)))
       _ (component/stop sys)]
-  (pprint (str (:id pid) "'s best end date is " (best-end-date up)))
-  (pprint "The full structure is:")
-  (pprint up))
+  (if (= :ok r)
+    (do
+      (pprint (str (:id pid) "'s best end date is " (best-end-date up)))
+      (pprint "The full structure is:")
+      (pprint up))
+    (do
+      (pprint (str "Error processing part " (:id pid) ":"))
+      (pprint p))))

@@ -3,10 +3,9 @@
   from an IFS database.
 
   The component has a single dependency: a database connection, `:db`,
-  that can be as the `db-spec` parameter in JDBC calls. Only two methods
-  are provided:
+  that can be as the `db-spec` parameter in JDBC calls. Only one method
+  is provided:
 
-  * `active-parts` which returns a collection of active part identifiers.
   * `get-part` which returns the record for a specific part.
 
   `get-part` returns part records matching the input schema of the other
@@ -22,17 +21,58 @@
             [route-ccrs.manufacturing-methods :as mm]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Schema
+
+(s/defschema GetPartResult
+  "A variant denoting the possible return values of `get-part`. Possible
+  variants are:
+
+  * `[:error {:invalid-part part-no}]`
+  * `[:error {:id part-no <schema validation errors>}]`
+  * `[:ok part-record]`"
+  (s/either
+    [(s/one (s/eq :ok) 'ok) (s/one ps/Part 'part)]
+    [(s/one (s/eq :error) 'error)
+     (s/one
+       (s/either
+         {:invalid-part ids/PartNo}
+         {:id ids/PartNo
+          s/Any s/Any})
+       'validation-error)]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Protocols
 
 (defprotocol PartStore
-  (active-parts
-    [this]
-    "Returns a collection of the currently active parts in this data
-    store, each part is represented by an `ActivePart` record.")
   (get-part
     [this part-id]
     [this part-id recurse?]
-    "Returns the part record of the specified part with:
+    "Returns a `GetPartResult` as detailed below.
+
+    If the requested part does not exist then
+    `[:error {:invalid-part part-id}]` is returned.
+
+    If the requested part, or a component part, does not validate to the
+    schema then `[:error validation-error]` is returned where
+    `validation-error` will be a map containing the `:id` of the
+    requested part and the keys of those fields that are invalid. For
+    example:
+
+        [:error
+         {:id \"100100002R01\"
+          :structs
+          {\"m1*\"
+           {:components
+            {\"100100001R01\"
+             {:struct-in-use (not (not-nil nil))}}}}}]
+
+    ... indicates that the component part `100100001R01`, in structure
+    `m1*`, does not have any valid structures (and so cannot be used
+    to build the parent part, invalidating it.)
+
+    If the part exists and is valid then the result `[:ok part]` is
+    returned with the `part` value containing the part record of the
+    specified part with:
 
     * The part ID and its attributes.
     * If the part is structured, its structures including:
@@ -70,7 +110,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Database queries
 
-(defquery -db-active-parts "route_ccrs/sql/active_parts.sql")
 (defquery -db-parts "route_ccrs/sql/parts.sql")
 (defquery -db-structures "route_ccrs/sql/structures.sql")
 (defquery -db-active-routes "route_ccrs/sql/active_routes.sql")
@@ -172,7 +211,7 @@
                   mm/short-mm)]
       (assoc structure :route-in-use riu :routes r))))
 
-(s/defn ^:always-validate get-component-parts :- {s/Any ps/Part}
+(s/defn get-component-parts :- {s/Any ps/Part}
   "Returns a map of the component parts for a given structure of a given
   part.
 
@@ -195,7 +234,7 @@
               {:connection db
                :row-fn deserialize-part})))
 
-(s/defn ^:always-validate populate-structures :- ps/StructuredPart
+(s/defn populate-structures :- ps/StructuredPart
   [db, part :- {:id ids/PartNo s/Any s/Any}, with-descendants, recursive]
   (let [part-routes (get-active-routes db part)
         s (reduce
@@ -224,14 +263,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Protocol implementation
 
-(s/defn ^:always-validate -ifs-active-parts :- [ps/ActivePart]
-  [part-store]
-  (-db-active-parts
-   {}
-   {:connection (:db part-store)
-    :row-fn #(sq/to-clj % {:low-level-code int-serializer})}))
-
-(s/defn ^:always-validate -ifs-part :- (s/maybe ps/Part)
+(s/defn ^:always-validate -ifs-part :- GetPartResult
   ([part-store part] (-ifs-part part-store part true))
   ([part-store, part :- {:id ids/PartNo s/Any s/Any}, recurse?]
    (let [p (-db-parts {:part_no (:id part)
@@ -241,10 +273,15 @@
                        :alternative nil}
                       {:connection (:db part-store)
                        :row-fn deserialize-part
-                       :result-set-fn first})]
-     (if (= :raw (:type p))
-       p
-       (populate-structures (:db part-store) p true recurse?)))))
+                       :result-set-fn first})
+         p (if (= :structured (:type p))
+             (populate-structures (:db part-store) p true recurse?)
+             p)
+         v (if p (s/check ps/Part p))]
+     (cond
+       (nil? p) [:error {:invalid-part (:id part)}]
+       v [:error (assoc v :id (:id part))]
+       :else [:ok p]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public
@@ -253,8 +290,7 @@
 
 (extend IFSPartStore
   PartStore
-  {:active-parts -ifs-active-parts
-   :get-part -ifs-part})
+  {:get-part -ifs-part})
 
 (defn ifs-part-store
   "Creates and returns a new IFS Part Store component."

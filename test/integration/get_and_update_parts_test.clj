@@ -29,6 +29,7 @@
    (let [dc (:date-calculator @tu/test-system)
          p (->> pno
                 (ps/get-part (:part-store @tu/test-system))
+                second
                 remove-best-end-dates)
          up (update-all-best-end-dates-under-part p dc)]
      (is (not= p up))
@@ -41,6 +42,7 @@
    (let [dc (:date-calculator @tu/test-system)
          p (->> pno
                 (ps/get-part (:part-store @tu/test-system))
+                second
                 remove-best-end-dates)
          up (update-all-best-end-dates-under-part p dc)]
      (is (not= p up))

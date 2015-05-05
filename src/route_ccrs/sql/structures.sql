@@ -1,25 +1,25 @@
 select distinct
   decode(
-    vps.bom_type_db,
+    asr.bom_type_db,
     'M', 'manufactured',
     'F', 'repair',
     'P', 'purchased',
     ''
   ) type,
-  vps.eng_chg_level revision,
-  vps.alternative_no alternative,
+  asr.eng_chg_level revision,
+  asr.structure_alternative alternative,
   psa.alternative_description description,
   ip.purch_leadtime lead_time,
   null best_end_date
-from ifsinfo.valid_product_structures vps
+from ifsinfo.active_structure_routings asr
 join ifsapp.prod_struct_alternate psa
-  on vps.contract = psa.contract
-  and vps.part_no = psa.part_no
-  and vps.bom_type_db = psa.bom_type_db
-  and vps.eng_chg_level = psa.eng_chg_level
-  and vps.alternative_no = psa.alternative_no
+  on asr.contract = psa.contract
+  and asr.part_no = psa.part_no
+  and asr.bom_type_db = psa.bom_type_db
+  and asr.eng_chg_level = psa.eng_chg_level
+  and asr.structure_alternative = psa.alternative_no
 join ifsapp.inventory_part ip
-  on vps.contract = ip.contract
-  and vps.part_no = ip.part_no
-where vps.contract = 'LPE'
-  and vps.part_no = :part_no
+  on asr.contract = ip.contract
+  and asr.part_no = ip.part_no
+where asr.contract = 'LPE'
+  and asr.part_no = :part_no
