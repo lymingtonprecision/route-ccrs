@@ -3,10 +3,9 @@
   from an IFS database.
 
   The component has a single dependency: a database connection, `:db`,
-  that can be as the `db-spec` parameter in JDBC calls. Only two methods
-  are provided:
+  that can be as the `db-spec` parameter in JDBC calls. Only one method
+  is provided:
 
-  * `active-parts` which returns a collection of active part identifiers.
   * `get-part` which returns the record for a specific part.
 
   `get-part` returns part records matching the input schema of the other
@@ -45,10 +44,6 @@
 ;; Protocols
 
 (defprotocol PartStore
-  (active-parts
-    [this]
-    "Returns a collection of the currently active parts in this data
-    store, each part is represented by an `ActivePart` record.")
   (get-part
     [this part-id]
     [this part-id recurse?]
@@ -115,7 +110,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Database queries
 
-(defquery -db-active-parts "route_ccrs/sql/active_parts.sql")
 (defquery -db-parts "route_ccrs/sql/parts.sql")
 (defquery -db-structures "route_ccrs/sql/structures.sql")
 (defquery -db-active-routes "route_ccrs/sql/active_routes.sql")
@@ -269,13 +263,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Protocol implementation
 
-(s/defn ^:always-validate -ifs-active-parts :- [ps/ActivePart]
-  [part-store]
-  (-db-active-parts
-   {}
-   {:connection (:db part-store)
-    :row-fn #(sq/to-clj % {:low-level-code int-serializer})}))
-
 (s/defn ^:always-validate -ifs-part :- GetPartResult
   ([part-store part] (-ifs-part part-store part true))
   ([part-store, part :- {:id ids/PartNo s/Any s/Any}, recurse?]
@@ -303,8 +290,7 @@
 
 (extend IFSPartStore
   PartStore
-  {:active-parts -ifs-active-parts
-   :get-part -ifs-part})
+  {:get-part -ifs-part})
 
 (defn ifs-part-store
   "Creates and returns a new IFS Part Store component."

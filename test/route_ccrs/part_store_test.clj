@@ -89,11 +89,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Protocol implementation tests, against the database
 
-(defspec ^:db active-parts-test *default-db-test-count*
-  (prop/for-all
-   [n (gen/such-that pos? gen/pos-int)]
-   (is (= n (count (take n (active-parts @part-store)))))))
-
 (defquery -raw-parts "queries/raw_parts.sql")
 (defquery -non-existant-part-no "queries/non_existant_part_no.sql")
 (defquery -valid-full-parts "queries/active_and_valid_full_bom_parts.sql")

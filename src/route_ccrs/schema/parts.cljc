@@ -9,14 +9,6 @@
 
 (declare Part)
 
-(def ActivePart
-  "An active part has *only* the fields:
-
-  `:id` a valid part number (see `PartNo`)
-  `:low-level-code` either zero or a positive integer"
-  {:id id/PartNo
-   :low-level-code s/Int})
-
 (def Source
   "A source is a variant of one of the following types:
 

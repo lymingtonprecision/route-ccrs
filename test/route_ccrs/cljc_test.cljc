@@ -15,7 +15,6 @@
             [route-ccrs.schema.routes.ccr-test]
             [route-ccrs.schema.routes.calculation-results-test]
             [route-ccrs.schema.routes-test]
-            [route-ccrs.schema.active-part-test]
             [route-ccrs.schema.part-sourcing-test]
             [route-ccrs.schema.purchased-raw-part-test]
             [route-ccrs.schema.structures.purchased-test]
@@ -53,7 +52,6 @@
     'route-ccrs.schema.routes.calculation-results-test
     'route-ccrs.schema.routes-test
     ; part schema
-    'route-ccrs.schema.active-part-test
     'route-ccrs.schema.part-sourcing-test
     'route-ccrs.schema.purchased-raw-part-test
     ; struct schema
