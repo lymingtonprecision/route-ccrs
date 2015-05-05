@@ -76,7 +76,7 @@
   (:refer-clojure :exclude [next])
   (:require [clojure.zip :as zip]
             [schema.core :as s]
-            #?(:clj [route-ccrs.schema.parts :refer [Part]])))
+            [route-ccrs.schema.parts :refer [Part]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Constants
@@ -187,7 +187,7 @@
 
 (s/defn part-zipper
   "Returns a zipper for traversing a part structure."
-  [part #?@(:clj [:- Part])]
+  [part :- Part]
   (zip/zipper
    (use-record-or-value branch?)
    (use-record-or-value branch-nodes)
