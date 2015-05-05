@@ -4,9 +4,22 @@
 
 ### Changed
 
+* `get-part` now returns a variant rather than just `nil` or the part
+  record. The return value can be either `[:ok part]` or `[:error err]`
+  this allows us to actually report validation errors caused by issues
+  with the data (in the hope that the use might fix them.)
 * Replaced dependency information with Clojars version badge in README.
 * Moved Reader Conditional notice up to top of "Usage" section in
   README.
+
+### Removed
+
+* `active-parts` as it was a remnant of the batch processing days and
+  served no real purpose in the context of general use of this library.
+* `valid_product_structures` IAL as we want to return information
+  about invalid structures.
+* Conditionals around `Part` schema in `part-zipper`, they were there
+  from before recursive schema were supported in ClojureScript.
 
 ## [3.1.0] - 2015-05-05
 
