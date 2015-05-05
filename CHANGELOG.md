@@ -59,3 +59,6 @@
   into their own namespaces.
 
 * Added tests to ensure top level parts have descriptions.
+
+[unreleased]: https://github.com/lymingtonprecision/route-ccrs/compare/3.1.0...HEAD
+[3.1.0]: https://github.com/lymingtonprecision/route-ccrs/compare/3.0.0...3.1.0
