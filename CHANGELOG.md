@@ -2,6 +2,8 @@
 
 ## [Unreleased][unreleased]
 
+## [3.2.0] - 2015-05-05
+
 ### Changed
 
 * `get-part` now returns a variant rather than just `nil` or the part
@@ -73,5 +75,6 @@
 
 * Added tests to ensure top level parts have descriptions.
 
-[unreleased]: https://github.com/lymingtonprecision/route-ccrs/compare/3.1.0...HEAD
+[unreleased]: https://github.com/lymingtonprecision/route-ccrs/compare/3.2.0...HEAD
+[3.2.0]: https://github.com/lymingtonprecision/route-ccrs/compare/3.1.0...3.2.0
 [3.1.0]: https://github.com/lymingtonprecision/route-ccrs/compare/3.0.0...3.1.0
