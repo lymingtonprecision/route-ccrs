@@ -3,7 +3,6 @@
             [clojure.test.check.clojure-test :refer [defspec]]
             [clojure.test.check.generators :as gen]
             [clojure.test.check.properties :as prop]
-            [schema.test]
             [route-ccrs.test-util :as tu]
             [yesql.core :refer [defquery]]
 
@@ -22,7 +21,7 @@
   (reset! part-store (map->IFSPartStore @tu/test-system))
   (test-fn))
 
-(use-fixtures :once create-part-store schema.test/validate-schemas)
+(use-fixtures :once create-part-store)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Deserialization tests
@@ -96,30 +95,49 @@
    (is (= n (count (take n (active-parts @part-store)))))))
 
 (defquery -raw-parts "queries/raw_parts.sql")
-(defquery -full-parts "queries/active_and_valid_full_bom_parts.sql")
+(defquery -non-existant-part-no "queries/non_existant_part_no.sql")
+(defquery -valid-full-parts "queries/active_and_valid_full_bom_parts.sql")
+(defquery -invalid-full-parts "queries/invalid_full_bom_parts.sql")
+
+(deftest ^:db get-non-existant-part
+  (let [pn (-non-existant-part-no {} {:connection (:db @tu/test-system)
+                                      :result-set-fn first})]
+    (is (= [:error {:invalid-part (:id pn)}]
+           (get-part @part-store pn)))))
 
 (defspec ^:db get-raw-parts-test *default-db-test-count*
   (prop/for-all
    [p (gen/elements (-raw-parts {} {:connection (:db @tu/test-system)}))
     r gen/boolean]
-   (is (= (:id p) (:id (get-part @part-store p r))))))
+   (is (= (:id p) (-> (get-part @part-store p r) second :id)))))
+
+(defspec ^:db get-invalid-full-parts-test *default-db-test-count*
+  (prop/for-all
+    [pn (gen/elements (-invalid-full-parts {}
+                                           {:connection (:db @tu/test-system)
+                                            :row-fn :id}))]
+    (let [r (get-part @part-store {:id pn} true)]
+      (is (= :error (first r)))
+      (is (= pn (-> r second :id)))
+      (is (not-empty (-> r second (dissoc :id)))))))
 
 (defspec ^:db get-full-parts-test *default-db-test-count*
   (prop/for-all
-   [p (gen/elements (-full-parts {:min_depth 0}
-                                 {:connection (:db @tu/test-system)}))
-    r gen/boolean]
-   (is (= (:id p) (:id (get-part @part-store p r))))))
+    [p (gen/elements (-valid-full-parts {:min_depth 0}
+                                        {:connection (:db @tu/test-system)}))
+     r gen/boolean]
+    (is (= (:id p) (-> (get-part @part-store p r) second :id)))))
 
 (defspec ^:db raw-parts-have-descriptions *default-db-test-count*
   (prop/for-all
     [p (gen/elements (-raw-parts {} {:connection (:db @tu/test-system)}))]
-    (is (not (nil? (:description (get-part @part-store p)))))))
+    (is (not (nil? (-> (get-part @part-store p) second :description))))))
 
 (defspec ^:db full-parts-have-descriptive-fields *default-db-test-count*
   (prop/for-all
-    [p (gen/elements (-full-parts {:min_depth 0} {:connection (:db @tu/test-system)}))]
-    (let [p (get-part @part-store p false)]
+    [p (gen/elements (-valid-full-parts {:min_depth 0}
+                                        {:connection (:db @tu/test-system)}))]
+    (let [p (second (get-part @part-store p false))]
       (is (not (nil? (:description p))))
       (is (contains? p :customer-part))
       (is (contains? p :issue)))))
@@ -154,6 +172,8 @@
 
 (defspec ^:db get-non-recursive-parts-test *default-db-test-count*
   (prop/for-all
-   [p (gen/elements (-full-parts {:min_depth 2}
+   [p (gen/elements (-valid-full-parts {:min_depth 2}
                                  {:connection (:db @tu/test-system)}))]
-   (is (= true (has-no-second-level-children? (get-part @part-store p false))))))
+   (is (= true
+          (has-no-second-level-children?
+            (second (get-part @part-store p false)))))))
