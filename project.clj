@@ -1,4 +1,4 @@
-(defproject lymingtonprecision/route-ccrs "3.1.0-SNAPSHOT"
+(defproject lymingtonprecision/route-ccrs "3.1.0"
   :description "A library for calculating part/routing end dates and CCRs"
   :url "https://github.com/lymingtonprecision/route-ccrs"
   :license {:name "Eclipse Public License"
