@@ -7,7 +7,7 @@
 * `get-part` now returns a variant rather than just `nil` or the part
   record. The return value can be either `[:ok part]` or `[:error err]`
   this allows us to actually report validation errors caused by issues
-  with the data (in the hope that the use might fix them.)
+  with the data (in the hope that the user might fix them.)
 * Replaced dependency information with Clojars version badge in README.
 * Moved Reader Conditional notice up to top of "Usage" section in
   README.
