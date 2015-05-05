@@ -11,6 +11,10 @@ Add the following dependency to your `project.clj` file:
 
 ## Usage
 
+**Note:** this library is dependant upon Clojure's [Reader
+Conditionals](http://dev.clojure.org/display/design/Reader+Conditionals)
+make sure you're using a version of Clojure(Script) that supports them.
+
 ### From Clojure
 
 There are two provided
@@ -47,10 +51,6 @@ Whilst ClojureScript clients can't expect to be able to directly use the
 components that interact with the database they _do_ have access to the
 schema and utility `fn`s that make working with the defined records a
 little bit easier.
-
-**Note:** this is dependant upon Clojure's [Reader
-Conditionals](http://dev.clojure.org/display/design/Reader+Conditionals)
-make sure you're using a version of ClojureScript that supports them.
 
 Currently the following namespaces are available in both runtimes:
 
