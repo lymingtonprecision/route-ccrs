@@ -7,7 +7,7 @@ constraining resource of parts, structures, and routings from IFS.
 
 Add the following dependency to your `project.clj` file:
 
-    [lymingtonprecision.route-ccrs "3.0.1"]
+[![Clojars Project](http://clojars.org/lymingtonprecision/route-ccrs/latest-version.svg)](http://clojars.org/lymingtonprecision/route-ccrs)
 
 ## Usage
 
