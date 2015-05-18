@@ -2,6 +2,8 @@
 
 ## [Unreleased][unreleased]
 
+## [3.3.0] - 2015-05-18
+
 ### Added
 
 * New implementation of `path-from-root-to-loc` that actually returns
@@ -90,5 +92,6 @@
 * Added tests to ensure top level parts have descriptions.
 
 [unreleased]: https://github.com/lymingtonprecision/route-ccrs/compare/3.2.0...HEAD
+[3.3.0]: https://github.com/lymingtonprecision/route-ccrs/compare/3.2.0...3.3.0
 [3.2.0]: https://github.com/lymingtonprecision/route-ccrs/compare/3.1.0...3.2.0
 [3.1.0]: https://github.com/lymingtonprecision/route-ccrs/compare/3.0.0...3.1.0
