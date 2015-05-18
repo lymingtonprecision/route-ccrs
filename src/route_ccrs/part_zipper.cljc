@@ -284,6 +284,38 @@
   [loc]
   (-> loc ids-from-loc-to-part reverse vec))
 
+(defn path-from-root-to-loc
+  "Returns the path to the zipper location `loc` within the root part
+  structure, suitable for use with `(get|assoc|update)-in` `fn`s.
+
+  For example:
+
+      ; to a first level structure
+      [:structs struct-key]
+
+      ; to a routing of the root part
+      [:structs struct-key :routes route-key]
+
+      ; to a first level component
+      [:structs struct-key :components component-key]
+
+      ; to a routing of a first level component
+      [:structs struct-key :components component-key :routes route-key]
+
+  Returns `nil` when called with the root location itself."
+  [loc]
+  (-> (loop [path []
+             loc loc]
+        (if (nil? (node-key loc))
+          path
+          (let [np (if (contains? (node-val loc) :components)
+                     [:structs (node-key loc)]
+                     [(node-key loc)])]
+            (recur (conj path np) (zip/up loc)))))
+      reverse
+      flatten
+      seq))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convenience defs against standard zipper fns
 
