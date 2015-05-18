@@ -2,6 +2,13 @@
 
 ## [Unreleased][unreleased]
 
+### Added
+
+* New implementation of `path-from-root-to-loc` that actually returns
+  the _path_ rather than a sequence of record IDs. (Paths being
+  something that contains `:structs`, `:routes`, and `:components`
+  keys and can be given to the `*-in` `fn`s.)
+
 ### Changed
 
 * Renamed all `path-from-...` `fn`s to `ids-from-...`. "Path" implied

@@ -438,6 +438,42 @@
            (vec (pz/ids-from-loc-to-root l))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; path-from-root-to-loc
+
+(deftest path-from-root-to-root
+  (let [p simple-test-part
+        z (pz/part-zipper p)]
+    (is (nil? (pz/path-from-root-to-loc z)))))
+
+(deftest path-from-root-to-struct
+  (let [p simple-test-part
+        z (-> (pz/part-zipper p) down)]
+    (is (= [:structs 1] (vec (pz/path-from-root-to-loc z))))))
+
+(deftest path-from-root-to-component
+  (let [p simple-test-part
+        z (-> (pz/part-zipper p) down down down)]
+    (is (= [:structs 1 :components 1]
+           (vec (pz/path-from-root-to-loc z))))))
+
+(deftest path-from-root-to-component-struct
+  (let [p simple-test-part
+        z (-> (pz/part-zipper p) down down down down)]
+    (is (= [:structs 1 :components 1 :structs 1]
+           (vec (pz/path-from-root-to-loc z))))))
+
+(deftest path-from-root-to-route
+  (let [p simple-test-part
+        z (-> (pz/part-zipper p) down down down down down right down)]
+    (is (= [:structs 1 :components 1 :structs 1 :routes 1]
+           (vec (pz/path-from-root-to-loc z))))))
+
+(deftest path-from-root-returns-loc-node-when-given-to-get-in
+  (let [p simple-test-part
+        z (-> (pz/part-zipper p) down down down down down right down)]
+    (is (= (pz/node-val z) (get-in p (pz/path-from-root-to-loc z))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; zip movement and end? fns exist as a convenience
 
 (deftest zip-movement-fns-exist-as-a-convenience
