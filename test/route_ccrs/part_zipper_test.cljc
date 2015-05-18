@@ -399,43 +399,43 @@
     (is (= (assoc-in p [:structs 1 :components 2] c) ep))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; path-from-loc-to-part
+;; ids-from-loc-to-part
 
-(deftest path-to-the-root-part-is-the-part-number
+(deftest ids-to-the-root-part-is-the-part-number
   (let [p simple-test-part
         z (pz/part-zipper p)]
-    (is (= [(:id p)] (vec (pz/path-from-loc-to-part z))))
-    (is (= [(:id p)] (vec (pz/path-from-loc-to-root z))))))
+    (is (= [(:id p)] (vec (pz/ids-from-loc-to-part z))))
+    (is (= [(:id p)] (vec (pz/ids-from-loc-to-root z))))))
 
-(deftest path-from-component-part
+(deftest ids-from-component-part
   (let [p simple-test-part
         z (pz/part-zipper p)
         l (-> z down down down)
         ep [(get-in p [:structs 1 :components 1 :id])]]
-    (is (= ep (vec (pz/path-from-loc-to-part l))))
+    (is (= ep (vec (pz/ids-from-loc-to-part l))))
     (is (= (into ep [(get-in p [:structs 1 :id]) (:id p)])
-           (vec (pz/path-from-loc-to-root l))))))
+           (vec (pz/ids-from-loc-to-root l))))))
 
-(deftest path-from-component-struct
+(deftest ids-from-component-struct
   (let [p simple-test-part
         z (pz/part-zipper p)
         l (-> z down down down down)
         ep [(get-in p [:structs 1 :components 1 :structs 1 :id])
             (get-in p [:structs 1 :components 1 :id])]]
-    (is (= ep (vec (pz/path-from-loc-to-part l))))
+    (is (= ep (vec (pz/ids-from-loc-to-part l))))
     (is (= (into ep [(get-in p [:structs 1 :id]) (:id p)])
-           (vec (pz/path-from-loc-to-root l))))))
+           (vec (pz/ids-from-loc-to-root l))))))
 
-(deftest path-from-component-route
+(deftest ids-from-component-route
   (let [p simple-test-part
         z (pz/part-zipper p)
         l (-> z down down down down down right down)
         ep [(get-in p [:structs 1 :components 1 :structs 1 :routes 1 :id])
             (get-in p [:structs 1 :components 1 :structs 1 :id])
             (get-in p [:structs 1 :components 1 :id])]]
-    (is (= ep (vec (pz/path-from-loc-to-part l))))
+    (is (= ep (vec (pz/ids-from-loc-to-part l))))
     (is (= (into ep [(get-in p [:structs 1 :id]) (:id p)])
-           (vec (pz/path-from-loc-to-root l))))))
+           (vec (pz/ids-from-loc-to-root l))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; zip movement and end? fns exist as a convenience

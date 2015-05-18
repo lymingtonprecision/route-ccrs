@@ -43,8 +43,8 @@
              :best-end-date])
   ```
 
-  (The `path-from-part-to-loc` fn in the `part-zipper` ns is
-  conspicuously useful for producing these types of path vectors.)"
+  (The `ids-from-part-to-loc` fn in the `part-zipper` ns is
+  conspicuously useful for producing these types of sequences.)"
   {ids/PartNo
    {(s/optional-key :best-end-date) d/DateInst
     ids/ManufacturingMethod

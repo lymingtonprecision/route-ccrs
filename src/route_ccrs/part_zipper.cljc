@@ -230,12 +230,10 @@
         v (apply f (node-val loc) args)]
     (zip/replace loc {k v})))
 
-(defn path-from-loc-to-root
-  "Returns the path from the zipper location `loc` to the root part to
-  which it belongs.
+(defn ids-from-loc-to-root
+  "Returns a sequence of record `:id`s from the zipper location `loc`
+  to the root part to which it belongs.
 
-  The path is the ID of the record at `loc` followed by a sequence of
-  intervening part and structure IDs until arriving at the root part.
   For example:
 
       ; from a routing of a first level component
@@ -258,14 +256,14 @@
                        [])]
     (conj path-to-item (-> loc zip/node vals first :id))))
 
-(defn path-from-root-to-loc
-  "A convenience for reversing the results of `path-from-loc-to-root`."
+(defn ids-from-root-to-loc
+  "A convenience for reversing the results of `ids-from-loc-to-root`."
   [loc]
-  (-> loc path-from-loc-to-root reverse vec))
+  (-> loc ids-from-loc-to-root reverse vec))
 
-(defn path-from-loc-to-part
-  "Returns the path from the zipper location `loc` to the part to which
-  it belongs.
+(defn ids-from-loc-to-part
+  "Returns a sequence of record `:id`s from the zipper location `loc`
+  to the part to which it belongs.
 
   If `loc` is a part then a sequence containing just the part number is
   returned.
@@ -278,13 +276,13 @@
      [struct-id part-id]
   "
   [loc]
-  (let [full-path (path-from-loc-to-root loc)]
+  (let [full-path (ids-from-loc-to-root loc)]
     (vec (take-until string? full-path))))
 
-(defn path-from-part-to-loc
-  "A convenience for reversing the results of `path-from-loc-to-part`."
+(defn ids-from-part-to-loc
+  "A convenience for reversing the results of `ids-from-loc-to-part`."
   [loc]
-  (-> loc path-from-loc-to-part reverse vec))
+  (-> loc ids-from-loc-to-part reverse vec))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convenience defs against standard zipper fns
