@@ -2,6 +2,13 @@
 
 ## [Unreleased][unreleased]
 
+### Changed
+
+* Renamed all `path-from-...` `fn`s to `ids-from-...`. "Path" implied
+  something that could be used with the core `*-in` `fn`s (`get-in`,
+  `assoc-in`, etc.) which was not the case. The `fn`s return sequences
+  of record `:id`s making `ids-from-...` more appropriate.
+
 ## [3.2.0] - 2015-05-05
 
 ### Changed

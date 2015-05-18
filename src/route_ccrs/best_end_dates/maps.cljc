@@ -42,7 +42,7 @@
   Will remove the best end date from the node if there is a `nil` entry
   in the best end date map."
   [n best-end-dates]
-  (let [p (conj (pz/path-from-part-to-loc n) :best-end-date)
+  (let [p (conj (pz/ids-from-part-to-loc n) :best-end-date)
         d (get-in best-end-dates p ::no-date-given)]
     (if (= ::no-date-given d)
       n
@@ -71,7 +71,7 @@
       bed
       (let [bed (if-let [ed (:best-end-date (pz/node-val loc))]
                   (assoc-in bed
-                            (conj (pz/path-from-part-to-loc loc) :best-end-date)
+                            (conj (pz/ids-from-part-to-loc loc) :best-end-date)
                             ed)
                   bed)]
         (recur bed (pz/next loc))))))
