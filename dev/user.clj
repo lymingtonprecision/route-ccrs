@@ -16,7 +16,7 @@
   "A hack to allow in-repl refresh of the environment vars"
   []
   (def env
-    (merge (read-env-file)
+    (merge (read-env-file ".lein-env")
            (read-system-env)
            (read-system-props))))
 
