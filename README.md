@@ -1,75 +1,122 @@
 # route-ccrs
 
-Calculates the current Capacity Constrained Resources for active
-manufacturing methods (combination of structure and routing) in IFS.
+A library for calculating the currently achievable best end date and
+constraining resource of parts, structures, and routings from IFS.
 
-Performs two types of calculation:
+## Installation
 
-### Routing only
+Add the following dependency to your `project.clj` file:
 
-> If we had all the material how soon could we produce _x_?
-
-The results of this calculation are stored in two tables:
-
-* `routing_ccr_hist` a history log of all calculated CCR values.
-* `routing_ccr` a slightly de-normalized table giving the CCR as per the
-  last calculation and the previous CCR if there has been a different
-  CCR calculated for the routing in the past.
-
-### Full Assembly
-
-> Starting from nothing when could we have _x_?
-
-Calculates, from the bottom up, all assembly lead times, determining
-both what the CCR is and which component is most constrained (and
-causing the longest delay before production can be started.)
-
-Populates two tables:
-
-* `assembly_ccr_hist` a history log all calculated values.
-* `assembly_ccr`, as with `routing_ccr`, a slightly de-normalized
-  table giving the results of the most recent calculation and
-  those of the preceding calculation when different.
+    [lymingtonprecision.route-ccrs "3.0.1"]
 
 ## Usage
 
-First, set the following environment variables:
+There are two provided
+[components](https://github.com/stuartsierra/component):
 
-    DB_NAME=the name of the Oracle instance to connect to
-    DB_SERVER=the name/address of the Oracle server
-    DB_USER=the user to connect as
-    DB_PASSWORD=the password to connect with
+* `route-ccrs.part-store/IFSPartStore` which creates `Part` records from
+  the part, structure, and routing data within IFS. These part records
+  form the basis of the inputs to all other `fn`s in the library.
+* `route-ccrs.best-end-dates.calculator/IFSDateCalculator` calculates
+  end dates based on the calendars and work center loads in IFS, given
+  various parameters about the new load requirement. Unlikely to be
+  used directly but required as a parameter to most of the `update-*`
+  `fn`s.
 
-(Note: [environ](https://github.com/weavejester/environ) is being used
-so these could be entered in `.lein-env` file.)
+Both components have a single dependency: a database connection,`:db`,
+that can be used as the `db-spec` in JDBC calls.
 
-Then execute the `jar` file:
+This library makes no assumptions on how such a connection is
+established or provided but it is suggested that you use [Hikari
+CP][hikari-cp] (and it's [Clojure bindings][hikari-clj].) (Just be
+mindful of the `:minimum-idle` and `:maximum-pool-size`
+settings&mdash;we don't want to consume all the database processes.)
 
-    java -jar <path\to\route-ccrs.jar>
+[hikari-cp]: https://github.com/brettwooldridge/HikariCP
+[hikari-clj]: https://github.com/tomekw/hikari-cp
 
-Note that [Ragtime](https://github.com/weavejester/ragtime) doesn't
-currently support loading migrations as resources from the JAR file. If
-you want the migrations to be performed automatically when running from
-a JAR you need to copy the `migrations` folder to the runtime directory.
+The vast majority of the `fn`s you will wish to use are in under the
+`route-ccrs.best-end-dates.*` namespaces. This covers updating and
+extracting the end dates of part records, and their child records.
 
-### Pre-Requisites
+### Example
 
-`finite-capacity-load` generated free work center capacity periods.
+```clojure
+(ns route-ccrs.example
+  (:require [clojure.pprint :refer [pprint]]
+            [hikari-cp.core :as hk]
+            [com.stuartsierra.component :as component]
+            [route-ccrs.part-store :as ps]
+            [route-ccrs.best-end-dates :refer [best-end-date]]
+            [route-ccrs.best-end-dates.calculator :as dc]
+            [route-ccrs.best-end-dates.update :refer :all]))
 
-`active_structure_routings` IAL created in `ifsinfo` schema (see
-definition in `resources/ials`.)
+(defrecord IFS [host instance user password]
+  component/Lifecycle
+  (start [this]
+    (let [o (merge hk/default-datasource-options
+                   {:adapter "oracle"
+                    :driver-type "thin"
+                    :server-name host
+                    :port-number 1521
+                    :database-name instance
+                    :username user
+                    :password password
+                    :minimum-idle 1
+                    :maximum-pool-size 10})
+          ds (hk/make-datasource o)]
+      (assoc this :options o :datasource ds)))
+  (stop [this]
+    (if-let [ds (:datasource this)]
+      (hk/close-datasource ds))
+    (dissoc this :datasource)))
 
-### Requirements
+(defn system [host instance user password]
+  (let [s (component/system-map
+           :db (->IFS host instance user password)
+           :part-store (ps/ifs-part-store)
+           :date-calculator (dc/ifs-date-calculator))]
+    (component/start s)))
 
-In order to run successfully the user account used must have the
-following access rights:
+(let [sys (system "database-server" "database-instance" "user" "password")
+      pid (rand-nth (ps/active-parts (:part-store sys)))
+      p (ps/get-part (:part-store sys) pid)
+      up (update-all-best-end-dates-under-part p (:date-calculator sys))
+      _ (component/stop sys)]
+  (pprint (str (:id pid) "'s best end date is " (best-end-date up)))
+  (pprint "The full structure is:")
+  (pprint up))
+```
+
+## Pre-Requisites
+
+The calculations performed by this library are dependant upon the
+free work capacity periods generated by the `finite-capacity-load`
+program.
+
+Additionally, the library requires use of some IALs&mdash;the
+definitions of which are in the `resources/ials` folder:
+
+* `active_structure_routings`
+  Lists all currently active _and tentative_ product structure/routing
+  combinations.
+
+* `valid_product_structures`
+  Lists every structure for which every part in the structure, at every
+  level, is either a purchased raw part or has at least one entry in
+  `active_structure_routings`.
+
+### Database permissions
+
+The user account used to establish the database connection given to the
+components in this library must have the following access rights:
 
     grant create session to routeccr;
-    grant create table to routeccr;
-    alter user routeccr quota unlimited on users;
     -- selects
     grant select on ifsapp.inventory_part to routeccr;
     grant select on ifsapp.inventory_part_planning to routeccr;
+    grant select on ifsapp.inventory_part_status_par to routeccr;
+    grant select on ifsinfo.inv_part_cust_part_no to routeccr;
     grant select on ifsapp.manuf_part_attribute to routeccr;
     grant select on ifsapp.prod_structure to routeccr;
     grant select on ifsapp.prod_structure_head to routeccr;
@@ -80,8 +127,12 @@ following access rights:
     grant select on ifsapp.work_center to routeccr;
     grant select on ifsapp.technical_object_reference to routeccr;
     grant select on ifsapp.technical_specification_both to routeccr;
+    grant select on ifsapp.shop_ord to routeccr;
+    grant select on ifsapp.purchase_order to routeccr;
+    grant select on ifsapp.purchase_order_line to routeccr;
     -- IALs
     grant select on ifsinfo.active_structure_routings to routeccr;
+    grant select on ifsinfo.valid_product_structures to routeccr;
     -- data from other programs
     grant select on finiteload.free_capacity to routeccr;
     -- apis
@@ -89,10 +140,6 @@ following access rights:
     grant execute on ifsapp.inventory_part_status_par_api to routeccr;
     grant execute on ifsapp.site_api to routeccr;
     grant execute on ifsapp.work_time_calendar_api to routeccr;
-
-As the user will be creating tables they will also need a suitable quota
-on the tablespace (use `alter user <username> quota unlimited on
-<tablespace>;` in a pinch.)
 
 ## License
 

@@ -1,40 +1,38 @@
+with active_part_statuses as (
+  select
+    ps.part_status
+  from ifsapp.inventory_part_status_par ps
+  where ps.demand_flag_db = 'Y'
+     or ps.onhand_flag_db = 'Y'
+     or ps.supply_flag_db = 'Y'
+)
+-- purchased raw parts
 select
-  ip.contract,
-  ip.part_no,
-  mpa.low_level lowest_level,
-  coalesce(
-    dbr_batch.value_no,
-    ipp.max_order_qty,
-    ipp.std_order_size
-  ) batch_size
+  ip.part_no id,
+  mpa.low_level low_level_code
 from ifsapp.inventory_part ip
-join ifsapp.inventory_part_planning ipp
-  on ip.contract = ipp.contract
-  and ip.part_no = ipp.part_no
 join ifsapp.manuf_part_attribute mpa
   on ip.contract = mpa.contract
   and ip.part_no = mpa.part_no
+where ip.type_code_db = '3'
+  and ip.part_status in (select part_status from active_part_statuses)
 --
-left outer join ifsapp.technical_object_reference ipor
-  on ipor.lu_name = 'InventoryPart'
-  and ipor.key_value =
-    ip.contract ||
-    '^' || ip.part_no ||
-    '^'
-left outer join ifsapp.technical_specification_both dbr_batch
-  on ipor.technical_spec_no = dbr_batch.technical_spec_no
-  and dbr_batch.attribute = 'DBR_BATCH_SIZE'
+union all
 --
-where ip.type_code_db = ifsapp.inventory_part_type_api.encode('Manufactured')
-  and ifsapp.inventory_part_status_par_api.get_supply_flag_db(ip.part_status) = 'Y'
+-- structured parts
+select
+  ip.part_no id,
+  mpa.low_level low_level_code
+from ifsapp.inventory_part ip
+join ifsapp.manuf_part_attribute mpa
+  on ip.contract = mpa.contract
+  and ip.part_no = mpa.part_no
+where ip.type_code_db <> '3'
   and exists (
     select
       *
-    from ifsinfo.active_structure_routings asr
-    where ip.contract = asr.contract
-      and ip.part_no = asr.part_no
-      and asr.structure_status <> 'Tentative'
-      and asr.Routing_status <> 'Tentative'
+    from ifsinfo.valid_product_structures vps
+    where ip.contract = vps.contract
+      and ip.part_no = vps.part_no
   )
-order by
-  mpa.low_level
+  and ip.part_status in (select part_status from active_part_statuses)
