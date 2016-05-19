@@ -288,7 +288,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public
 
-(defrecord IFSPartStore [db])
+(defrecord IFSPartStore [db]
+  component/Lifecycle
+  (start [this] this)
+  (stop [this] this))
 
 (extend IFSPartStore
   PartStore

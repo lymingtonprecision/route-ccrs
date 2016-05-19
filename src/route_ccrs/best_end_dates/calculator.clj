@@ -91,7 +91,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public
 
-(defrecord IFSDateCalculator [db])
+(defrecord IFSDateCalculator [db]
+  component/Lifecycle
+  (start [this] this)
+  (stop [this] this))
 
 (extend IFSDateCalculator
   EndDateResolver
