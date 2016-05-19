@@ -28,9 +28,6 @@
   ([pred gen] (gen-such-that pred gen *such-that-retries*))
   ([pred gen max-retries] (gen/such-that pred gen max-retries)))
 
-#?(:clj  (def gen-double gen'/double)
-   :cljs (def gen-double (gen/fmap #(rand %) gen/nat)))
-
 (def gen-id
   (gen/one-of
    [gen/string-ascii

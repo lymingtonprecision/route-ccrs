@@ -1,7 +1,7 @@
 (ns route-ccrs.generators.work-center
   (:require #?(:clj  [clojure.test.check.generators :as gen]
                :cljs [cljs.test.check.generators :as gen])
-            [route-ccrs.generators.util :refer [gen-such-that gen-double]]))
+            [route-ccrs.generators.util :refer [gen-such-that]]))
 
 (def work-center-types
   #{:internal :external})
@@ -22,5 +22,8 @@
     :id gen-valid-id
     :description gen/string-ascii
     :type (gen/elements work-center-types)
-    :hours-per-day (gen-such-that pos? (gen/one-of [gen-double gen/pos-int]))
+    :hours-per-day (gen-such-that
+                    pos?
+                    (gen/one-of [(gen/double* {:infinite? false :NaN? false :min 0})
+                                 gen/pos-int]))
     :potential-ccr? gen/boolean))

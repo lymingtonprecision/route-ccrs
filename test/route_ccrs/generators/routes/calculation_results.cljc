@@ -2,7 +2,7 @@
   (:require #?(:clj  [clojure.test.check.generators :as gen]
                :cljs [cljs.test.check.generators :as gen])
             [route-ccrs.generators.util
-             :refer [gen-such-that gen-date gen-double]]
+             :refer [gen-such-that gen-date]]
             [route-ccrs.generators.ccr :as ccr]))
 
 (defn gen-calc-results
@@ -14,7 +14,9 @@
           total-touch-time gen/pos-int
           total-buffer (gen/one-of
                          [gen/pos-int
-                          (gen-such-that #(>= % 0) gen-double)])}}]
+                          (gen-such-that
+                           #(>= % 0)
+                           (gen/double* {:infinite? false :NaN? false :min 0}))])}}]
    (gen/hash-map
      :ccr ccr
      :ccr-queue ccr-queue
@@ -30,7 +32,7 @@
 (def gen-neg-int-or-non-integer
   (gen/one-of
     [gen-neg-int-or-non-number
-     (gen-such-that (complement zero?) gen-double)]))
+     (gen-such-that (complement zero?) gen/double)]))
 
 (def gen-invalid-calc-results
   (gen/one-of
