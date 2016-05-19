@@ -2,6 +2,14 @@
 
 ## [Unreleased][unreleased]
 
+### Changed
+
+* All route/operation details are now retrieved from the “Routed
+  Operations” suite of PL/SQL packages that drive our DBR
+  implementation. The biggest change this introduces is that the
+  operation buffers are now pulled from the database rather than
+  being calculated. It also ensures parity between the systems.
+
 ## [3.3.0] - 2015-05-18
 
 ### Added

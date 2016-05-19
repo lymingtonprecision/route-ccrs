@@ -1,13 +1,13 @@
 (ns route-ccrs.generators.operation
   (:require #?(:clj  [clojure.test.check.generators :as gen]
                :cljs [cljs.test.check.generators :as gen])
-            [route-ccrs.generators.util :refer [gen-such-that gen-double]]
+            [route-ccrs.generators.util :refer [gen-such-that]]
             [route-ccrs.generators.work-center :as wc]))
 
 (def gen-valid-id (gen-such-that pos? gen/pos-int))
 (def gen-invalid-id (gen/one-of
                      [gen/neg-int
-                      gen-double
+                      gen/double
                       (gen-such-that #(if (number? %) (< % 1) true)
                                      gen/simple-type)]))
 
@@ -38,7 +38,7 @@
     (gen-operation {:touch-time
                     (gen/one-of
                      [(gen-such-that neg? gen/neg-int)
-                      (gen-such-that (complement zero?) gen-double)
+                      (gen-such-that (complement zero?) gen/double)
                       (gen-such-that (complement number?) gen/simple-type)])})
     ; invalid buffer
     (gen-operation {:buffer

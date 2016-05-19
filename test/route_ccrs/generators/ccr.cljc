@@ -2,14 +2,14 @@
   (:require #?(:clj  [clojure.test.check.generators :as gen]
                :cljs [cljs.test.check.generators :as gen])
             [route-ccrs.generators.util
-             :refer [gen-such-that gen-with-extra-fields gen-double]]
+             :refer [gen-such-that gen-with-extra-fields]]
             [route-ccrs.generators.work-center :as wc]
             [route-ccrs.generators.operation :as op]))
 
 (def gen-valid-buffer
   (gen/one-of
     [gen/pos-int
-     (gen-such-that #(>= % 0) gen-double)]))
+     (gen-such-that #(>= % 0) (gen/double* {:infinite? false :NaN? false}))]))
 
 (def gen-invalid-buffer
   (gen/one-of
@@ -18,7 +18,7 @@
 
 (def gen-invalid-touch-time
   (gen/one-of
-    [(gen-such-that (complement zero?) gen-double)
+   [(gen-such-that (complement zero?) gen/double)
      (gen-such-that neg? gen/neg-int)
      (gen-such-that (complement number?) gen/simple-type)]))
 
@@ -52,4 +52,3 @@
      (gen-with-extra-fields (gen-ccr))
      ; not a record
      gen/simple-type]))
-
