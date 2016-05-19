@@ -12,16 +12,11 @@
 
 (s/defn operation-buffer-days :- s/Num
   "Returns the number of days buffered production that operation `o`
-  should be scheduled for (can be fractional.)
-
-  If `o` is using an `:internal` work center the buffer is 50% of the
-  touch time, external operations are unbuffered."
+  should be scheduled for (can be fractional.)"
   [o :- rs/Operation]
-  (let [f (if (= :internal (-> o :work-center :type)) 1.5 1.0)]
-    (-> (:touch-time o)
-        (* f)
-        (/ 60.0)
-        (/ (-> o :work-center :hours-per-day)))))
+  (-> (+ (get o :touch-time 0) (get o :buffer 0))
+      (/ 60.0)
+      (/ (-> o :work-center :hours-per-day))))
 
 (s/defn calculate-route-totals
   "Returns a map containing the `:total-touch-time` and `:total-buffer`

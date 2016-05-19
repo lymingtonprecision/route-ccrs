@@ -25,7 +25,8 @@
                                                   :type :internal
                                                   :hours-per-day 8
                                                   :potential-ccr? true}
-                                    :touch-time 10}]}))))
+                                    :touch-time 10
+                                    :buffer 5}]}))))
 
 (deftest start-date-of-a-raw-part
   (let [r {:id "100117890R20" :type :raw :lead-time 10 :best-end-date nil}

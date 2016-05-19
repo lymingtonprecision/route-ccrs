@@ -13,15 +13,19 @@
 
 (defn gen-operation
   ([] (gen-operation {}))
-  ([{:keys [id touch-time work-center description]
+  ([{:keys [id touch-time buffer work-center description]
      :or {id gen-valid-id
           description gen/string-ascii
           touch-time gen/pos-int
+          buffer (gen/one-of
+                  [gen/pos-int
+                   (gen/double* {:infinite? false :NaN? false :min 0})])
           work-center wc/gen-work-center}}]
    (gen/hash-map
     :id id
     :description description
     :touch-time touch-time
+    :buffer buffer
     :work-center work-center)))
 
 (def gen-invalid-operation
@@ -35,6 +39,12 @@
                     (gen/one-of
                      [(gen-such-that neg? gen/neg-int)
                       (gen-such-that (complement zero?) gen-double)
+                      (gen-such-that (complement number?) gen/simple-type)])})
+    ; invalid buffer
+    (gen-operation {:buffer
+                    (gen/one-of
+                     [(gen-such-that neg? gen/neg-int)
+                      (gen-such-that (complement zero?) (gen/double* {:max 0}))
                       (gen-such-that (complement number?) gen/simple-type)])})
      ; not a record
     gen/simple-type]))

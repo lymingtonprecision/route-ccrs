@@ -11,6 +11,19 @@
     (serialize [_ v] v)
     (deserialize [_ v] (keyword (str v)))))
 
+(def num-serializer
+  (reify sq/Serializer
+    (serialize [_ v] v)
+    (deserialize [_ v]
+      (cond
+        (nil? v) nil
+        (number? v) v
+        (string? v) (cond
+                      (re-find #"\." v) (java.lang.Double. v)
+                      (> (count v) 9) (java.math.BigDecimal. v)
+                      :else (java.lang.Integer/parseInt v))
+        :else nil))))
+
 (def int-serializer
   (reify sq/Serializer
     (serialize [_ v] v)

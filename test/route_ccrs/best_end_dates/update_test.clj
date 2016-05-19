@@ -75,7 +75,8 @@
                                                   :type :internal
                                                   :hours-per-day 8
                                                   :potential-ccr? true}
-                                    :touch-time 10}]}}}}}
+                                    :touch-time 10
+                                    :buffer 5}]}}}}}
         ex (assoc-in p [:structs "2c89" :best-end-date]
                      (interval-end-date dummy-resolver lt d))]
     (is (= ex (update-best-end-date p dummy-resolver d)))))
@@ -103,7 +104,7 @@
                :routes
                {1 {:id {:type :manufactured :revision 1 :alternative "*"}
                    :operations
-                   [{:id 10 :touch-time (* 10 60)
+                   [{:id 10 :touch-time (* 10 60) :buffer (* 5 60)
                      :work-center (work-centers "MC008")}]}}}
             2 {:id {:type :purchased :revision 1 :alternative "*"}
                :components {} :lead-time lt :best-end-date nil}}}
@@ -143,7 +144,7 @@
                :routes
                {1 {:id {:type :manufactured :revision 1 :alternative "*"}
                    :operations
-                   [{:id 10 :touch-time (* 10 60)
+                   [{:id 10 :touch-time (* 10 60) :buffer (* 5 60)
                      :work-center (work-centers "MC008")}]}}}}}
         d (rand-days-from-date)
         e (-> p
@@ -243,7 +244,7 @@
                    :total-touch-time 600
                    :total-buffer 1.875
                    :operations
-                   [{:id 10 :touch-time (* 10 60)
+                   [{:id 10 :touch-time (* 10 60) :buffer (* 5 60)
                      :work-center (work-centers "MC008")}]}}}}}
         p (remove-best-end-dates e)]
     (is (not= e p))

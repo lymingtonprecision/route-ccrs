@@ -41,7 +41,8 @@
                                                :type :internal
                                                :hours-per-day 8
                                                :potential-ccr? true}
-                                 :touch-time 10}]}}
+                                 :touch-time 10
+                                 :buffer 5}]}}
                :components
                {1 {:id "100110028R01"
                    :type :raw
@@ -74,7 +75,8 @@
                                                        :type :external
                                                        :hours-per-day 24
                                                        :potential-ccr? false}
-                                         :touch-time 240}]}}
+                                         :touch-time 240
+                                         :buffer 0}]}}
                        :components
                        {1 {:id "100120035R01"
                            :type :raw

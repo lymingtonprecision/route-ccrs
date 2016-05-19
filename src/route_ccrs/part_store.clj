@@ -146,12 +146,14 @@
                     :id int-serializer
                     :type keyword-serializer
                     :touch-time int-serializer
+                    :buffer num-serializer
                     :potential-ccr bool-serializer})
       ((fn [x]
          {:route (:route x)
           :id (:id x)
           :description (:description x)
           :touch-time (:touch-time x)
+          :buffer (:buffer x)
           :work-center {:id (:work-center x)
                         :description (:work-center-description x)
                         :type (:type x)

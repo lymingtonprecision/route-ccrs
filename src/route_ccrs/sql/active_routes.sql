@@ -32,6 +32,7 @@ SELECT
     * 60,
     2
   ) AS touch_time,
+  decode(ro.work_center_type, 'O', 0, ro.buffer * 60) AS buffer,
   ro.work_center_no AS work_center,
   wc.description AS work_center_description,
   wc.average_capacity AS hours_per_day,

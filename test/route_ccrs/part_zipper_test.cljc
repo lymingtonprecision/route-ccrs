@@ -35,7 +35,7 @@
                :route-in-use 1
                :routes
                {1 {:id {:type :manufactured :revision 1 :alternative "*"}
-                   :operations [{:id 10 :work-center MC032 :touch-time 10}]}}
+                   :operations [{:id 10 :work-center MC032 :touch-time 10 :buffer 5}]}}
                :components
                {1 {:id "100120035R01"
                    :type :raw
@@ -104,7 +104,7 @@
                  :route-in-use 'ow
                  :routes
                  {'ow {:id {:type :manufactured :revision 1 :alternative "*"}
-                       :operations [{:id 10 :work-center MC032 :touch-time 1}]}}}}}
+                       :operations [{:id 10 :work-center MC032 :touch-time 1 :buffer 0.5}]}}}}}
         z (pz/part-zipper p)]
     (is (= 1 (-> z down pz/node-key)))
     (is (= :components (-> z down down pz/node-key)))
@@ -171,7 +171,7 @@
                :route-in-use 1
                :routes
                {1 {:id {:type :manufactured :revision 1 :alternative "*"}
-                   :operations [{:id 10 :work-center MC032 :touch-time 1}]}}}}}
+                   :operations [{:id 10 :work-center MC032 :touch-time 1 :buffer 0.5}]}}}}}
         z (pz/part-zipper p)
         zs (zip/children z)]
     (is (= (count zs) (count (set zs))))
@@ -314,7 +314,7 @@
                :route-in-use 1
                :routes
                {1 {:id {:type :manufactured :revision 1 :alternative "*"}
-                   :operations [{:id 10 :work-center MC032 :touch-time 1}]}}}}}
+                   :operations [{:id 10 :work-center MC032 :touch-time 1 :buffer 0.5}]}}}}}
         z (pz/part-zipper p)
         k (rand-nth (-> p :structs keys))]
     (is (= (update-in p [:structs] dissoc k)

@@ -43,6 +43,7 @@
   {:id OperationId
    (s/optional-key :description) (s/maybe s/Str)
    :touch-time touch-time
+   :buffer buffer
    :work-center WorkCenter})
 
 (def CCR

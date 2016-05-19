@@ -40,7 +40,8 @@
                                        :type :internal
                                        :hours-per-day 8
                                        :potential-ccr? true}
-                         :touch-time 10}]}]
+                         :touch-time 10
+                         :buffer 5}]}]
     (is (nil? (best-end-date r)))))
 
 (deftest calculated-route-best-end-date
@@ -55,11 +56,12 @@
                                        :type :internal
                                        :hours-per-day 8
                                        :potential-ccr? true}
-                         :touch-time 10}]}]
+                         :touch-time 10
+                         :buffer 5}]}]
     (is (= (:best-end-date r) (best-end-date r)))))
 
 (deftest manufactured-structure-best-end-date
-  (let [o {:id 10 :touch-time 10
+  (let [o {:id 10 :touch-time 10 :buffer 5
            :work-center {:id "MC032"
                          :type :internal
                          :hours-per-day 8
@@ -95,7 +97,7 @@
                                        :total-buffer 5))))))
 
 (deftest structured-part-best-end-date
-  (let [o {:id 10 :touch-time 10
+  (let [o {:id 10 :touch-time 10 :buffer 5
            :work-center {:id "MC032"
                          :type :internal
                          :hours-per-day 8
@@ -175,7 +177,8 @@
                                                :type :internal
                                                :hours-per-day 8
                                                :potential-ccr? true}
-                                 :touch-time 10}]}}}}}
+                                 :touch-time 10
+                                 :buffer 5}]}}}}}
         red (update-in r [:structs 1 :routes 1] assoc
                        :best-end-date (t/today)
                        :ccr nil

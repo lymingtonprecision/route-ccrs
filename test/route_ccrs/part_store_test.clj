@@ -42,6 +42,7 @@
           :id 10
           :description "CNC Lathe"
           :touch-time 25
+          :buffer 12.5
           :work-center {:id "MC032"
                         :description "Mazak Integrex 200Y"
                         :type :internal
@@ -55,6 +56,7 @@
            :id 10M
            :description "CNC Lathe"
            :touch_time 25.001
+           :buffer 12.5
            :work_center "MC032"
            :work_center_description "Mazak Integrex 200Y"
            :type "internal"

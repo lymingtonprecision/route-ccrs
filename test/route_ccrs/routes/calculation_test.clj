@@ -18,28 +18,44 @@
 
 (def work-centers dr/work-centers)
 
+(defn calculate-buffers [xs]
+  (vec
+   (map
+    (fn [x]
+      (let [b (if (= :external (-> x :work-center :type))
+                0
+                (* (:touch-time x) 0.5))]
+        (assoc x :buffer b)))
+    xs)))
+
+(defn almost=
+  ([^Double x ^Double y]
+   (almost= x y 6))
+  ([^Double x ^Double y precision]
+   (cond
+     (some #(.isNaN %) [x y]) (every? #(.isNaN %) [x y])
+     (some #(.isInfinite %) [x y]) (every? #(.isInfinite %) [x y])
+     :else
+     (with-precision precision
+       (= (BigDecimal. x *math-context*) (BigDecimal. y *math-context*))))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; operation-buffer-days
 
-(defspec internal-work-center-operation-buffer-days
-  (prop/for-all [[tth wc] (gen/tuple
-                           gen/pos-int
-                           (gen/elements
-                             (filter #(= :internal (:type %))
-                                     (vals work-centers))))]
-                (let [o {:id 10 :work-center wc :touch-time (* tth 60)}]
-                  (is (= (/ (* tth 1.5) (-> o :work-center :hours-per-day))
-                         (operation-buffer-days o))))))
-
-(defspec external-work-center-operation-buffer-days
-  (prop/for-all [[tth wc] (gen/tuple
-                           gen/pos-int
-                           (gen/elements
-                             (filter #(= :external (:type %))
-                                     (vals work-centers))))]
-                (let [o {:id 10 :work-center wc :touch-time (* tth 60)}]
-                  (is (= (/ (* tth 1.0) (-> o :work-center :hours-per-day))
-                         (operation-buffer-days o))))))
+(defspec operation-buffer-days-is-touch-time-plus-buffer
+  (prop/for-all [[tth buf wc] (gen/tuple
+                               gen/pos-int
+                               (gen/double* {:infinity? false :NaN? false :min 0})
+                               (gen/elements
+                                (filter #(= :internal (:type %))
+                                        (vals work-centers))))]
+                (let [o {:id 10
+                         :work-center wc
+                         :touch-time (* tth 60)
+                         :buffer (* buf 60)}]
+                  (is (almost=
+                       (/ (+ tth buf) (-> o :work-center :hours-per-day))
+                       (operation-buffer-days o))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; calculate-route-totals
@@ -47,9 +63,10 @@
 (deftest simple-route-total
   (let [r {:id {:type :manufactured :revision 1 :alternative "*"}
            :operations
-           [{:id 10 :work-center (work-centers "MC008") :touch-time (* 5 60)}
-            {:id 20 :work-center (work-centers "EXT24") :touch-time (* 1 60 24)}
-            {:id 30 :work-center (work-centers "IN008") :touch-time (* 1 60)}]}
+           (calculate-buffers
+            [{:id 10 :work-center (work-centers "MC008") :touch-time (* 5 60)}
+             {:id 20 :work-center (work-centers "EXT24") :touch-time (* 1 60 24)}
+             {:id 30 :work-center (work-centers "IN008") :touch-time (* 1 60)}])}
         ex {:total-touch-time 1800
             :total-buffer 2.125}]
     (is (= ex (calculate-route-totals r)))))
@@ -57,9 +74,10 @@
 (deftest fractional-touch-time-route-total
   (let [r {:id {:type :manufactured :revision 1 :alternative "*"}
            :operations
-           [{:id 10 :work-center (work-centers "MC008") :touch-time (* 5.33 60)}
-            {:id 20 :work-center (work-centers "EXT24") :touch-time (* 3.12 60 24)}
-            {:id 30 :work-center (work-centers "IN008") :touch-time (* 1.57 60)}]}
+           (calculate-buffers
+            [{:id 10 :work-center (work-centers "MC008") :touch-time (* 5.33 60)}
+             {:id 20 :work-center (work-centers "EXT24") :touch-time (* 3.12 60 24)}
+             {:id 30 :work-center (work-centers "IN008") :touch-time (* 1.57 60)}])}
         ex {:total-touch-time 4907
             :total-buffer 4.41375}]
     (s/without-fn-validation
@@ -71,8 +89,9 @@
 (def route-without-ccrs
   {:id {:type :manufactured :revision 1 :alternative "*"}
    :operations
-   [{:id 10 :work-center (work-centers "EXT24") :touch-time (* 5 60 24)}
-    {:id 20 :work-center (work-centers "IN008") :touch-time (* 10 60)}]})
+   (calculate-buffers
+    [{:id 10 :work-center (work-centers "EXT24") :touch-time (* 5 60 24)}
+     {:id 20 :work-center (work-centers "IN008") :touch-time (* 10 60)}])})
 
 (deftest potential-ccrs-for-route-without-potential-ccrs
   (let [r route-without-ccrs]
@@ -93,7 +112,8 @@
               (assoc-in [:operations 1 :work-center] (work-centers "MC008"))
               (update-in [:operations] conj {:id 40
                                              :work-center (work-centers "MC008")
-                                             :touch-time (* 4 60)}))
+                                             :touch-time (* 4 60)
+                                             :buffer 120.0}))
         e {:id "MC008"
            :operation 20
            :total-touch-time 840
@@ -104,13 +124,14 @@
 (deftest potential-ccrs-with-multiple-ccrs
   (let [r {:id {:type :manufactured :revision 1 :alternative "*"}
            :operations
-           [{:id 10 :work-center (work-centers "MC008") :touch-time (* 10 60)}
-            {:id 20 :work-center (work-centers "EXT24") :touch-time (* 4 60 24)}
-            {:id 30 :work-center (work-centers "MC012") :touch-time (* 3 60)}
-            {:id 40 :work-center (work-centers "MC012") :touch-time (* 3 60)}
-            {:id 50 :work-center (work-centers "IN008") :touch-time (* 2 60)}
-            {:id 60 :work-center (work-centers "MC008") :touch-time (* 3 60)}
-            {:id 70 :work-center (work-centers "IN008") :touch-time (* 1 60)}]}
+           (calculate-buffers
+            [{:id 10 :work-center (work-centers "MC008") :touch-time (* 10 60)}
+             {:id 20 :work-center (work-centers "EXT24") :touch-time (* 4 60 24)}
+             {:id 30 :work-center (work-centers "MC012") :touch-time (* 3 60)}
+             {:id 40 :work-center (work-centers "MC012") :touch-time (* 3 60)}
+             {:id 50 :work-center (work-centers "IN008") :touch-time (* 2 60)}
+             {:id 60 :work-center (work-centers "MC008") :touch-time (* 3 60)}
+             {:id 70 :work-center (work-centers "IN008") :touch-time (* 1 60)}])}
         e [{:id "MC008"
             :operation 10
             :total-touch-time 780
@@ -144,7 +165,8 @@
   (let [r (update-in route-without-ccrs [:operations 0]
                      assoc
                      :work-center (work-centers "MC008")
-                     :touch-time (* 64 60))
+                     :touch-time (* 64 60)
+                     :buffer (* 32 60))
         q (work-center-queues "MC008" 0)
         e (assoc r
                  :ccr {:id "MC008"
@@ -162,13 +184,14 @@
 (deftest route-calculation-multiple-ccrs
   (let [r {:id {:type :manufactured :revision 1 :alternative "*"}
            :operations
-           [{:id 10 :work-center (work-centers "MC008") :touch-time (* 10 60)}
-            {:id 20 :work-center (work-centers "EXT24") :touch-time (* 4 60 24)}
-            {:id 30 :work-center (work-centers "MC012") :touch-time (* 3 60)}
-            {:id 40 :work-center (work-centers "MC012") :touch-time (* 3 60)}
-            {:id 50 :work-center (work-centers "IN008") :touch-time (* 2 60)}
-            {:id 60 :work-center (work-centers "MC008") :touch-time (* 3 60)}
-            {:id 70 :work-center (work-centers "IN008") :touch-time (* 1 60)}]}
+           (calculate-buffers
+            [{:id 10 :work-center (work-centers "MC008") :touch-time (* 10 60)}
+             {:id 20 :work-center (work-centers "EXT24") :touch-time (* 4 60 24)}
+             {:id 30 :work-center (work-centers "MC012") :touch-time (* 3 60)}
+             {:id 40 :work-center (work-centers "MC012") :touch-time (* 3 60)}
+             {:id 50 :work-center (work-centers "IN008") :touch-time (* 2 60)}
+             {:id 60 :work-center (work-centers "MC008") :touch-time (* 3 60)}
+             {:id 70 :work-center (work-centers "IN008") :touch-time (* 1 60)}])}
         q (work-center-queues "MC012" 0)
         e (assoc r
                  :ccr {:id "MC012"
