@@ -1,7 +1,7 @@
 (ns route-ccrs.generators.structured-part
   (:require #?(:clj  [clojure.test.check.generators :as gen]
                :cljs [cljs.test.check.generators :as gen])
-            [route-ccrs.generators.util :as gu :refer [gen-such-that]]
+            [route-ccrs.generators.util :as gu :refer [gen-such-that gen-id]]
             [route-ccrs.generators.part-no :as pn]
             [route-ccrs.generators.part-sourcing :refer [gen-source]]
             [route-ccrs.generators.structures.purchased :as ps]
@@ -14,7 +14,7 @@
     (gen/resize
       *sensible-child-list-size*
       (gen/map
-        gen/simple-type
+        gen-id
         (gen/one-of [(ps/gen-purch-struct) (ms/gen-valid)])))))
 
 (def gen-valid-struct-attrs

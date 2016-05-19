@@ -8,7 +8,7 @@
                :cljs [cljs.test.check.generators :as gen])
             #?(:clj  [clojure.test.check.properties :as prop]
                :cljs [cljs.test.check.properties :as prop :include-macros true])
-            [route-ccrs.generators.util :refer [gen-such-that]]
+            [route-ccrs.generators.util :refer [gen-such-that gen-id]]
             [route-ccrs.generators.raw-part :as raw]
             [route-ccrs.generators.manufacturing-method :as mm]
             [route-ccrs.generators.structures.purchased :as ps]
@@ -29,7 +29,7 @@
 (defspec structure-ids-must-be-manufacturing-methods
   (prop/for-all [s (gen/hash-map :id gen/simple-type
                                  :components (gen/map
-                                               gen/simple-type
+                                               gen-id
                                                (raw/gen-raw-part)))]
                 (not-valid-to-schema Structure s)))
 
@@ -56,7 +56,7 @@
 
 (defspec valid-structure-lists-consist-of-zero-or-more-structures
   25
-  (prop/for-all [l (gen/map gen/simple-type gen-valid-structure)]
+  (prop/for-all [l (gen/map gen-id gen-valid-structure)]
                 (is-valid-to-schema StructureList l)))
 
 (deftest structure-list-keys-cannot-be-nil
@@ -66,7 +66,7 @@
 
 (defspec a-single-invalid-entry-invalidates-a-list
   (prop/for-all
-    [l (gen/resize 5 (gen/map gen/simple-type gen-valid-structure))
+    [l (gen/resize 5 (gen/map gen-id gen-valid-structure))
      k gen/simple-type
      v gen/simple-type]
     (not-valid-to-schema StructureList (assoc l k v))))
@@ -74,7 +74,7 @@
 (defspec any-struct-in-use-value-is-valid-if-it-matches-a-struct
   25
   (prop/for-all
-    [l (gen/not-empty (gen/map gen/simple-type gen-valid-structure))]
+    [l (gen/not-empty (gen/map gen-id gen-valid-structure))]
     (is-valid-to-schema valid-structure-in-use?
                         {:structs l
                          :struct-in-use (rand-nth (keys l))})))
@@ -89,7 +89,7 @@
   (prop/for-all
     [s (gen/not-empty
          (gen/resize
-           5 (gen/map gen/simple-type gen-valid-structure)))
+           5 (gen/map gen-id gen-valid-structure)))
      m (gen/map gen/simple-type gen/simple-type)]
     (is-valid-to-schema
       StructuredItem
@@ -98,11 +98,11 @@
 (defspec maps-arent-structured-if-they-dont-have-structs
   25
   (prop/for-all
-    [m (gen/map gen/simple-type gen/simple-type)
+    [m (gen/map gen-id gen/simple-type)
      s (gen/one-of
          [(gen/return {})
-          (gen/hash-map :struct-in-use gen/simple-type)
+          (gen/hash-map :struct-in-use gen-id)
           (gen/hash-map
             :structs
-            (gen/resize 5 (gen/map gen/simple-type gen-valid-structure)))])]
+            (gen/resize 5 (gen/map gen-id gen-valid-structure)))])]
     (not-valid-to-schema StructuredItem (merge m s))))

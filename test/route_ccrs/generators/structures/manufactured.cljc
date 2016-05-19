@@ -2,7 +2,7 @@
   (:require #?(:clj  [clojure.test.check.generators :as gen]
                :cljs [cljs.test.check.generators :as gen])
             [route-ccrs.generators.util
-             :refer [gen-such-that gen-with-extra-fields]]
+             :refer [gen-such-that gen-with-extra-fields gen-id]]
             [route-ccrs.generators.raw-part :as raw]
             [route-ccrs.generators.manufacturing-method :as mm]
             [route-ccrs.generators.route :as route]))
@@ -10,13 +10,13 @@
 (def ^:dynamic *sensible-child-list-size* 5)
 
 (defn gen-valid-routes [t]
-  (let [gen-id (route/gen-valid-id t)]
+  (let [gen-route-id (route/gen-valid-id t)]
     (gen/not-empty
       (gen/resize
         *sensible-child-list-size*
         (gen/map
-          gen/simple-type
-          (route/gen-calculated-route {:id gen-id}))))))
+          gen-id
+          (route/gen-calculated-route {:id gen-route-id}))))))
 
 (defn gen-routed-attrs [t]
   (let [route-gen (if (= :invalid t)
@@ -38,7 +38,7 @@
           components (gen/resize
                        *sensible-child-list-size*
                        (gen/map
-                         gen/simple-type
+                         gen-id
                          (raw/gen-raw-part)))
           routes (gen-routed-attrs :manufactured)}}]
    (gen/fmap

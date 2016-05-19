@@ -30,3 +30,10 @@
 
 #?(:clj  (def gen-double gen'/double)
    :cljs (def gen-double (gen/fmap #(rand %) gen/nat)))
+
+(def gen-id
+  (gen/one-of
+   [gen/string-ascii
+    gen/nat
+    gen/keyword
+    gen/symbol]))
