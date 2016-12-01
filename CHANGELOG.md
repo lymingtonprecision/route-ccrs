@@ -2,6 +2,8 @@
 
 ## [Unreleased][unreleased]
 
+## [3.5.0] - 2016-12-01
+
 ### Changed
 
 * Excluding MRP order code ‘B’ parts from structures. These are long
@@ -108,6 +110,7 @@
 * Added tests to ensure top level parts have descriptions.
 
 [unreleased]: https://github.com/lymingtonprecision/route-ccrs/compare/3.4.0...HEAD
+[3.5.0]: https://github.com/lymingtonprecision/route-ccrs/compare/3.4.0...3.5.0
 [3.4.0]: https://github.com/lymingtonprecision/route-ccrs/compare/3.3.0...3.4.0
 [3.3.0]: https://github.com/lymingtonprecision/route-ccrs/compare/3.2.0...3.3.0
 [3.2.0]: https://github.com/lymingtonprecision/route-ccrs/compare/3.1.0...3.2.0
