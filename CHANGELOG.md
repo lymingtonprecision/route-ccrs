@@ -2,6 +2,12 @@
 
 ## [Unreleased][unreleased]
 
+### Changed
+
+* Excluding MRP order code ‘B’ parts from structures. These are long
+  lead time parts for which we maintain safety stocks/use KANBAN and so
+  do not want to have them unduly impact the leadtimes of their parents.
+
 ## [3.4.0] - 2016-05-19
 
 ### Changed

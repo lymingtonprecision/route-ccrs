@@ -28,6 +28,9 @@ where ip.contract = 'LPE'
       select
         ps.component_part
       from ifsapp.prod_structure ps
+      join ifsapp.inventory_part_planning ipp
+        on ps.contract = ipp.contract
+        and ps.component_part = ipp.part_no
       where ps.contract = 'LPE'
         and ps.part_no = :parent_part_no
         and ps.bom_type_db = decode(
@@ -39,5 +42,6 @@ where ip.contract = 'LPE'
         )
         and ps.eng_chg_level = :revision
         and ps.alternative_no = :alternative
+        and ipp.planning_method <> 'B'
     ))
   )
