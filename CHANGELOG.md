@@ -2,6 +2,13 @@
 
 ## [Unreleased][unreleased]
 
+### Changed
+
+* Use the primary supplier’s manufacturing lead time for purchase parts,
+  where available. Fallback to the inventory part purchase lead time
+  when there is no primary supplier or the lead time has not been
+  entered.
+
 ## [3.5.0] - 2016-12-01
 
 ### Changed

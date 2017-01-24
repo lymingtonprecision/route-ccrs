@@ -8,19 +8,34 @@ select
     3, 'raw',
     'structured'
   ) type,
-  ip.purch_leadtime lead_time,
+  case
+    when nvl(pps.vendor_manuf_leadtime, 0) > 0 then
+      pps.vendor_manuf_leadtime
+    else
+      ip.purch_leadtime
+  end lead_time,
   decode(
     ip.type_code_db,
     3, ifsapp.work_time_calendar_api.get_end_date(
       ifsapp.site_api.get_manuf_calendar_id(ip.contract),
       trunc(sysdate),
-      ip.purch_leadtime
+      case
+        when nvl(pps.vendor_manuf_leadtime, 0) > 0 then
+          pps.vendor_manuf_leadtime
+        else
+          ip.purch_leadtime
+      end
     ),
     null
   ) best_end_date
 from ifsapp.inventory_part ip
 join ifsinfo.inv_part_cust_part_no ipcp
   on ip.part_no = ipcp.part_no
+left outer join ifsapp.purchase_part_supplier pps
+  on ip.contract = pps.contract
+  and ip.part_no = pps.part_no
+  and pps.primary_vendor_db = 'Y'
+  and pps.vendor_no <> '50000'
 where ip.contract = 'LPE'
   and (
     (:part_no is not null and ip.part_no = :part_no) or
