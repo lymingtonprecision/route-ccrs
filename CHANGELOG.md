@@ -2,6 +2,8 @@
 
 ## [Unreleased][unreleased]
 
+## [3.6.0] - 2017-01-24
+
 ### Changed
 
 * Use the primary supplier’s manufacturing lead time for purchase parts,
@@ -116,7 +118,8 @@
 
 * Added tests to ensure top level parts have descriptions.
 
-[unreleased]: https://github.com/lymingtonprecision/route-ccrs/compare/3.4.0...HEAD
+[unreleased]: https://github.com/lymingtonprecision/route-ccrs/compare/3.6.0...HEAD
+[3.6.0]: https://github.com/lymingtonprecision/route-ccrs/compare/3.5.0...3.6.0
 [3.5.0]: https://github.com/lymingtonprecision/route-ccrs/compare/3.4.0...3.5.0
 [3.4.0]: https://github.com/lymingtonprecision/route-ccrs/compare/3.3.0...3.4.0
 [3.3.0]: https://github.com/lymingtonprecision/route-ccrs/compare/3.2.0...3.3.0
