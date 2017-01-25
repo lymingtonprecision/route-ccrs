@@ -160,6 +160,7 @@ components in this library must have the following access rights:
     grant select on ifsapp.shop_ord to routeccr;
     grant select on ifsapp.purchase_order to routeccr;
     grant select on ifsapp.purchase_order_line to routeccr;
+    grant select on ifsapp.purchase_part_supplier to routeccr;
     -- IALs
     grant select on ifsinfo.active_structure_routings to routeccr;
     -- data from other programs
